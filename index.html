@@ -391,7 +391,7 @@ Behaviour:
 // ─────────────────────────────────────────
 function show(id) {
   ['screen-name','screen-brief','screen-chat','screen-results'].forEach(s => {
-    document.getElementById(s).style.display = s === id ? '' : 'none';
+    document.getElementById(s).style.display = s === id ? 'block' : 'none';
   });
 }
 
