@@ -7,15 +7,38 @@ exports.handler = async (event) => {
     const { system, messages, max_tokens } = JSON.parse(event.body);
     const apiKey = process.env.GEMINI_API_KEY;
 
-    // Convert Anthropic-style messages to Gemini format
-    const geminiContents = messages.map((m) => ({
+    if (!apiKey) {
+      return {
+        statusCode: 500,
+        body: JSON.stringify({ error: "GEMINI_API_KEY is not set" }),
+      };
+    }
+
+    // Convert to Gemini roles
+    let geminiContents = messages.map((m) => ({
       role: m.role === "assistant" ? "model" : "user",
       parts: [{ text: m.content }],
     }));
 
+    // Gemini requires strict alternation and must start with user
+    // Merge consecutive same-role messages
+    const merged = [];
+    for (const msg of geminiContents) {
+      if (merged.length > 0 && merged[merged.length - 1].role === msg.role) {
+        merged[merged.length - 1].parts[0].text += "\n" + msg.parts[0].text;
+      } else {
+        merged.push({ role: msg.role, parts: [{ text: msg.parts[0].text }] });
+      }
+    }
+
+    // Must start with user turn
+    if (merged.length > 0 && merged[0].role === "model") {
+      merged.unshift({ role: "user", parts: [{ text: "(conversation start)" }] });
+    }
+
     const geminiBody = {
       system_instruction: system ? { parts: [{ text: system }] } : undefined,
-      contents: geminiContents,
+      contents: merged,
       generationConfig: {
         maxOutputTokens: max_tokens || 1000,
         temperature: 0.9,
@@ -36,15 +59,18 @@ exports.handler = async (event) => {
     if (!response.ok) {
       return {
         statusCode: response.status,
-        body: JSON.stringify({ error: data.error?.message || "Gemini API error" }),
+        body: JSON.stringify({ error: data.error?.message || "Gemini API error", detail: data }),
       };
     }
 
-    // Normalise to Anthropic-style response so the frontend works unchanged
     const text = data.candidates?.[0]?.content?.parts?.[0]?.text || "";
-    const normalised = {
-      content: [{ type: "text", text }],
-    };
+
+    if (!text) {
+      return {
+        statusCode: 500,
+        body: JSON.stringify({ error: "Empty response from Gemini", detail: data }),
+      };
+    }
 
     return {
       statusCode: 200,
@@ -52,7 +78,7 @@ exports.handler = async (event) => {
         "Content-Type": "application/json",
         "Access-Control-Allow-Origin": "*",
       },
-      body: JSON.stringify(normalised),
+      body: JSON.stringify({ content: [{ type: "text", text }] }),
     };
   } catch (err) {
     return {
