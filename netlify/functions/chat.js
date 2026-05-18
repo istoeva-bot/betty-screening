@@ -15,13 +15,12 @@ exports.handler = async (event) => {
     }
 
     // Convert to Gemini roles
-    let geminiContents = messages.map((m) => ({
+    const geminiContents = messages.map((m) => ({
       role: m.role === "assistant" ? "model" : "user",
       parts: [{ text: m.content }],
     }));
 
     // Gemini requires strict alternation and must start with user
-    // Merge consecutive same-role messages
     const merged = [];
     for (const msg of geminiContents) {
       if (merged.length > 0 && merged[merged.length - 1].role === msg.role) {
@@ -30,10 +29,8 @@ exports.handler = async (event) => {
         merged.push({ role: msg.role, parts: [{ text: msg.parts[0].text }] });
       }
     }
-
-    // Must start with user turn
     if (merged.length > 0 && merged[0].role === "model") {
-      merged.unshift({ role: "user", parts: [{ text: "(conversation start)" }] });
+      merged.unshift({ role: "user", parts: [{ text: "(start)" }] });
     }
 
     const geminiBody = {
@@ -43,6 +40,13 @@ exports.handler = async (event) => {
         maxOutputTokens: max_tokens || 1000,
         temperature: 0.9,
       },
+      // Disable safety filters that block gambling/iGaming content
+      safetySettings: [
+        { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_NONE" },
+        { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_NONE" },
+        { category: "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold: "BLOCK_NONE" },
+        { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_NONE" },
+      ],
     };
 
     const model = "gemini-2.0-flash";
@@ -56,19 +60,30 @@ exports.handler = async (event) => {
 
     const data = await response.json();
 
+    console.log("Gemini status:", response.status);
+    console.log("Gemini response:", JSON.stringify(data).substring(0, 500));
+
     if (!response.ok) {
       return {
         statusCode: response.status,
-        body: JSON.stringify({ error: data.error?.message || "Gemini API error", detail: data }),
+        body: JSON.stringify({ error: data.error?.message || "Gemini API error" }),
       };
     }
 
-    const text = data.candidates?.[0]?.content?.parts?.[0]?.text || "";
+    const candidate = data.candidates?.[0];
+    const finishReason = candidate?.finishReason;
+    const text = candidate?.content?.parts?.[0]?.text || "";
+
+    console.log("Finish reason:", finishReason, "Text length:", text.length);
 
     if (!text) {
       return {
         statusCode: 500,
-        body: JSON.stringify({ error: "Empty response from Gemini", detail: data }),
+        body: JSON.stringify({
+          error: "Empty response from Gemini",
+          finishReason,
+          safetyRatings: candidate?.safetyRatings,
+        }),
       };
     }
 
@@ -81,6 +96,7 @@ exports.handler = async (event) => {
       body: JSON.stringify({ content: [{ type: "text", text }] }),
     };
   } catch (err) {
+    console.error("Function error:", err.message);
     return {
       statusCode: 500,
       body: JSON.stringify({ error: err.message }),
