@@ -37,7 +37,7 @@ exports.handler = async (event) => {
       system_instruction: system ? { parts: [{ text: system }] } : undefined,
       contents: merged,
       generationConfig: {
-        maxOutputTokens: max_tokens || 1000,
+        maxOutputTokens: max_tokens || 8000,
         temperature: 0.9,
       },
       // Disable safety filters that block gambling/iGaming content
