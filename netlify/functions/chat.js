@@ -20,7 +20,7 @@ exports.handler = async (event) => {
       parts: [{ text: m.content }],
     }));
 
-    // Gemini requires strict alternation and must start with user
+    // Strict alternation + must start with user
     const merged = [];
     for (const msg of geminiContents) {
       if (merged.length > 0 && merged[merged.length - 1].role === msg.role) {
@@ -38,9 +38,8 @@ exports.handler = async (event) => {
       contents: merged,
       generationConfig: {
         maxOutputTokens: max_tokens || 8000,
-        temperature: 0.9,
+        temperature: 0.7,
       },
-      // Disable safety filters that block gambling/iGaming content
       safetySettings: [
         { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_NONE" },
         { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_NONE" },
@@ -49,19 +48,24 @@ exports.handler = async (event) => {
       ],
     };
 
-const model = "gemini-2.5-flash";
-const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+    const model = "gemini-2.5-flash";
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
 
-    const response = await fetch(url, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(geminiBody),
-    });
-
-    const data = await response.json();
+    // Retry once on 503
+    let response, data;
+    for (let attempt = 0; attempt < 2; attempt++) {
+      response = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(geminiBody),
+      });
+      data = await response.json();
+      if (response.status !== 503) break;
+      await new Promise(r => setTimeout(r, 2000));
+    }
 
     console.log("Gemini status:", response.status);
-    console.log("Gemini response:", JSON.stringify(data).substring(0, 500));
+    console.log("Finish reason:", data.candidates?.[0]?.finishReason);
 
     if (!response.ok) {
       return {
@@ -70,20 +74,12 @@ const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:ge
       };
     }
 
-    const candidate = data.candidates?.[0];
-    const finishReason = candidate?.finishReason;
-    const text = candidate?.content?.parts?.[0]?.text || "";
-
-    console.log("Finish reason:", finishReason, "Text length:", text.length);
+    const text = data.candidates?.[0]?.content?.parts?.[0]?.text || "";
 
     if (!text) {
       return {
         statusCode: 500,
-        body: JSON.stringify({
-          error: "Empty response from Gemini",
-          finishReason,
-          safetyRatings: candidate?.safetyRatings,
-        }),
+        body: JSON.stringify({ error: "Empty response from Gemini", finishReason: data.candidates?.[0]?.finishReason }),
       };
     }
 
