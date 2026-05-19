@@ -267,10 +267,11 @@ body { display: flex; align-items: flex-start; justify-content: center; padding:
         <svg viewBox="0 0 16 16"><path d="M8 13V3M3 8l5-5 5 5"/></svg>
       </button>
     </div>
-   <div class="end-wrap" id="endWrap" style="display:none">
-  <p style="font-size:12px; color:var(--text3); text-align:center; padding: 0 20px 6px;">Once the issue feels resolved, click below to receive your score.</p>
-  <button class="end-btn" onclick="endChat()">End chat &amp; get score →</button>
-</div>
+    <div class="end-wrap" id="endWrap" style="display:none">
+      <p style="font-size:12px; color:var(--text3); text-align:center; padding: 0 20px 6px;">Once the issue feels resolved, click below to receive your score.</p>
+      <button class="end-btn" onclick="endChat()">End chat &amp; get score →</button>
+    </div>
+  </div>
 
   <!-- ── SCREEN 4: Results ── -->
   <div id="screen-results">
@@ -292,7 +293,9 @@ body { display: flex; align-items: flex-start; justify-content: center; padding:
 // ─────────────────────────────────────────
 let candidateName = '';
 let scenario = null;
-let history = [];   // agent = user role, customer = assistant role
+let history = [];
+let customerMsgCount = 0;
+const MAX_CUSTOMER_MSGS = 10;   // agent = user role, customer = assistant role
 let isBusy = false;
 let isFinished = false;
 let scoreData = null;
@@ -532,8 +535,7 @@ async function getCustomerReply(agentMsg) {
 
   try {
     const data = await callAPI({
-      model: 'claude-sonnet-4-20250514',
-      max_tokens: 3000,
+      max_tokens: 800,
       system: scenario.systemPrompt(candidateName),
       messages: history
     });
@@ -541,11 +543,21 @@ async function getCustomerReply(agentMsg) {
     const reply = data.content[0].text;
     history.push({ role: 'assistant', content: reply });
     removeTyping();
+    customerMsgCount++;
     addMessage('customer', reply);
+    // Auto-end after 10 customer messages
+    if (customerMsgCount >= MAX_CUSTOMER_MSGS && !isFinished) {
+      document.getElementById('userInput').disabled = true;
+      document.getElementById('sendBtn').disabled = true;
+      const endWrap = document.getElementById('endWrap');
+      endWrap.style.display = 'block';
+      const hint = endWrap.querySelector('p');
+      if (hint) hint.textContent = 'Maximum exchanges reached. Please end the chat to get your score.';
+    }
   } catch(e) {
     removeTyping();
     // Show a neutral customer message that won't confuse the flow
-    const fallback = "sorry, you still there?";
+    const fallback = "hmm, give me a sec...";
     history.push({ role: 'assistant', content: fallback });
     addMessage('customer', fallback);
     console.error('Customer reply error:', e);
@@ -606,8 +618,7 @@ Scoring: 8-10 excellent, 6-7 solid, 4-5 weak, 1-3 poor. Verdict: 7+ = proceed, 5
 
   try {
     const data = await callAPI({
-      model: 'claude-sonnet-4-20250514',
-      max_tokens: 800,
+      max_tokens: 3000,
       messages: [{ role: 'user', content: scoreRequest }]
     });
 
@@ -671,8 +682,10 @@ function showResults() {
 }
 
 // ─────────────────────────────────────────
-// Google Sheets export
+// Google Sheets export (via Apps Script webhook)
 // ─────────────────────────────────────────
+const SHEETS_WEBHOOK = 'https://script.google.com/macros/s/AKfycbym9fMJd0SRgjq8lHM1N7fGpA8aUD4SFjSWs4_ZrRSIb6OW086ldYtIyDfTi123pN79/exec';
+
 async function exportToSheets() {
   const btn = document.getElementById('exportBtn');
   const note = document.getElementById('exportNote');
@@ -682,35 +695,35 @@ async function exportToSheets() {
   const s = scoreData;
   const transcript = buildTranscript();
 
-  const content = `Add a new row to a Google Sheet named "Betty CS Agent Screening" (create it with these column headers if it doesn't exist: Timestamp, Candidate Name, Scenario, Overall, Greeting & Tone, Empathy & Warmth, Policy Knowledge, De-escalation, Clarity, Resolution, Verdict, Summary, Full Transcript).
-
-Timestamp: ${new Date().toLocaleString('en-CA')}
-Candidate Name: ${candidateName}
-Scenario: ${scenario.label}
-Overall: ${s.overall}
-Greeting & Tone: ${s.scores.greeting_and_tone}
-Empathy & Warmth: ${s.scores.empathy_and_warmth}
-Policy Knowledge: ${s.scores.policy_knowledge}
-De-escalation: ${s.scores.de_escalation}
-Clarity: ${s.scores.clarity}
-Resolution: ${s.scores.resolution}
-Verdict: ${s.verdict}
-Summary: ${s.summary}
-Full Transcript:
-${transcript}`;
+  const payload = {
+    timestamp: new Date().toLocaleString('en-CA'),
+    candidate: candidateName,
+    scenario: scenario.label,
+    overall: s.overall,
+    greeting: s.scores.greeting_and_tone,
+    empathy: s.scores.empathy_and_warmth,
+    policy: s.scores.policy_knowledge,
+    deescalation: s.scores.de_escalation,
+    clarity: s.scores.clarity,
+    resolution: s.scores.resolution,
+    verdict: s.verdict,
+    summary: s.summary,
+    transcript: transcript
+  };
 
   try {
-    await callAPI({
-      model: 'claude-sonnet-4-20250514',
-      max_tokens: 500,
-      mcp_servers: [{ type: 'url', url: 'https://sheets.googleapis.com/mcp/v1', name: 'google-sheets' }],
-      messages: [{ role: 'user', content: content }]
+    const res = await fetch(SHEETS_WEBHOOK, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
     });
+
+    if (!res.ok) throw new Error('Webhook error');
 
     btn.classList.remove('loading');
     btn.classList.add('ok');
     btn.innerHTML = `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M2.5 8l4 4 7-7"/></svg> Sent to Google Sheets`;
-    note.textContent = 'Saved to "Betty CS Agent Screening" in your Google Drive.';
+    note.textContent = 'Results saved to your Google Sheet.';
   } catch(e) {
     btn.classList.remove('loading');
     btn.innerHTML = `<svg viewBox="0 0 16 16"><rect x="2" y="2" width="12" height="12" rx="1.5"/><path d="M5 8h6M5 5.5h6M5 10.5h4"/></svg> Send results to Google Sheets`;
