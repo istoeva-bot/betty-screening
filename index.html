@@ -278,11 +278,7 @@ body { display: flex; align-items: flex-start; justify-content: center; padding:
     <div class="results-label" id="resultsLabel">Performance score</div>
     <div class="score-grid" id="scoreGrid"></div>
     <div id="verdictBox"></div>
-    <button class="export-btn" id="exportBtn" onclick="exportToSheets()">
-      <svg viewBox="0 0 16 16"><rect x="2" y="2" width="12" height="12" rx="1.5"/><path d="M5 8h6M5 5.5h6M5 10.5h4"/></svg>
-      Send results to Google Sheets
-    </button>
-    <div class="export-note" id="exportNote"></div>
+    <div class="export-note" id="exportNote" style="display:none;"></div>
   </div>
 
 </div><!-- /card -->
@@ -645,34 +641,20 @@ function vIcon(v) {
 }
 
 function showResults() {
-  const s = scoreData;
-  const vLabels = { proceed: 'Recommended to proceed', hold: 'Hold — further review recommended', decline: 'Not recommended at this time' };
+  // Auto-export to Google Sheets silently in the background
+  exportToSheets();
 
-  document.getElementById('resultsLabel').textContent = `Performance score — ${candidateName}`;
+  // Show thank you screen to candidate — no scores visible
+  document.getElementById('resultsLabel').textContent = `Thank you, ${candidateName}!`;
 
-  const scoreItems = [
-    ['Overall', s.overall],
-    ['Greeting & tone', s.scores.greeting_and_tone],
-    ['Empathy & warmth', s.scores.empathy_and_warmth],
-    ['Policy knowledge', s.scores.policy_knowledge],
-    ['De-escalation', s.scores.de_escalation],
-    ['Clarity', s.scores.clarity],
-    ['Resolution', s.scores.resolution],
-  ];
-
-  document.getElementById('scoreGrid').innerHTML = scoreItems.map(([label, val]) => `
-    <div class="sc">
-      <div class="sc-lbl">${label}</div>
-      <div class="sc-val">${val}<span> / 10</span></div>
-    </div>
-  `).join('');
+  document.getElementById('scoreGrid').innerHTML = '';
 
   document.getElementById('verdictBox').innerHTML = `
-    <div class="verdict-box ${s.verdict}">
-      <div class="vi">${vIcon(s.verdict)}</div>
-      <div>
-        <div class="vt">${vLabels[s.verdict] || vLabels.hold}</div>
-        <div class="vn">${s.summary}</div>
+    <div style="text-align:center; padding: 24px 16px;">
+      <div style="font-size:40px; margin-bottom:16px;">🎉</div>
+      <div style="font-size:16px; font-weight:500; color:var(--text); margin-bottom:10px;">Simulation complete</div>
+      <div style="font-size:14px; color:var(--text2); line-height:1.65; max-width:360px; margin:0 auto;">
+        Thank you for completing the Betty CS Agent simulation. Your responses have been recorded and our team will be in touch with next steps shortly.
       </div>
     </div>
   `;
@@ -682,16 +664,9 @@ function showResults() {
 }
 
 // ─────────────────────────────────────────
-// Google Sheets export (via Apps Script webhook)
+// Google Sheets export (proxied via Netlify function to avoid CORS)
 // ─────────────────────────────────────────
-const SHEETS_WEBHOOK = 'https://script.google.com/macros/s/AKfycbym9fMJd0SRgjq8lHM1N7fGpA8aUD4SFjSWs4_ZrRSIb6OW086ldYtIyDfTi123pN79/exec';
-
 async function exportToSheets() {
-  const btn = document.getElementById('exportBtn');
-  const note = document.getElementById('exportNote');
-  btn.classList.add('loading');
-  btn.innerHTML = `<span class="spin">↻</span> Sending...`;
-
   const s = scoreData;
   const transcript = buildTranscript();
 
@@ -712,22 +687,14 @@ async function exportToSheets() {
   };
 
   try {
-    const res = await fetch(SHEETS_WEBHOOK, {
+    const res = await fetch('/api/chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
+      body: JSON.stringify({ action: 'exportToSheets', payload })
     });
-
-    if (!res.ok) throw new Error('Webhook error');
-
-    btn.classList.remove('loading');
-    btn.classList.add('ok');
-    btn.innerHTML = `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M2.5 8l4 4 7-7"/></svg> Sent to Google Sheets`;
-    note.textContent = 'Results saved to your Google Sheet.';
+    if (!res.ok) throw new Error('Export failed');
+    console.log('Sheets export successful');
   } catch(e) {
-    btn.classList.remove('loading');
-    btn.innerHTML = `<svg viewBox="0 0 16 16"><rect x="2" y="2" width="12" height="12" rx="1.5"/><path d="M5 8h6M5 5.5h6M5 10.5h4"/></svg> Send results to Google Sheets`;
-    note.textContent = 'Export failed — please try again.';
     console.error('Export error:', e);
   }
 }
