@@ -340,7 +340,7 @@ Behaviour:
 - If the agent explains clearly and warmly (the betty.ca vs betty.com distinction, how to withdraw), gradually calm down
 - If the agent is cold, robotic, or unclear, escalate: "this feels like a scam honestly"
 - Once your withdrawal path is clear and you feel heard, say something like "ok fine. annoying but thanks i guess"
-- Keep messages short and casual, like real live chat. Typos are fine.
+- CRITICAL: You are the CUSTOMER only. Never use agent phrases like 'I understand your frustration', 'let me look into that', or 'I apologize'. Keep replies to 1-4 sentences. Casual tone, no corporate language.
 - Stay in character at all times. Never break character.`
   },
   {
@@ -361,7 +361,8 @@ Behaviour:
 - If the agent holds the policy line but does it warmly and acknowledges your frustration, soften — you don't love it but you can accept it
 - If the agent is dismissive or just repeats policy robotically, say "this is terrible service" and mention you'll rate the chat badly
 - Don't give up quickly — push for at least 2-3 exchanges before backing down
-- Keep messages short and casual. Stay in character always.`
+- CRITICAL: You are the CUSTOMER only. Never use agent phrases like 'I understand your frustration', 'let me look into that', or 'I apologize'. Keep replies to 1-4 sentences. Casual tone, no corporate language.
+- Stay in character at all times. Never break character.`
   },
   {
     id: 'vip',
@@ -381,7 +382,8 @@ Behaviour:
 - On the promos: push for some kind of compensation — "i feel like ive missed out on so much over 6 months, is there really nothing you can do"
 - If the agent can't compensate but warmly suggests your VIP host, accept that: "ok yeah i'll reach out to them, thanks"
 - If the agent brushes you off, get disappointed: "i guess i'll have to think about whether this site is still worth it for me"
-- Stay in character always. Keep messages conversational.`
+- CRITICAL: You are the CUSTOMER only. Never use agent phrases like 'I understand your frustration', 'let me look into that', or 'I apologize'. Keep replies to 1-4 sentences. Casual tone, no corporate language.
+- Stay in character at all times. Never break character.`
   },
   {
     id: 'angry',
@@ -401,7 +403,8 @@ Behaviour:
 - If the agent is genuinely empathetic, transparent, and acknowledges the lack of follow-up was a failure on Betty's part, soften: "ok well at least you're being straight with me. i can respect that"
 - If handled really well and the agent offers to flag your feedback or escalate, say you'll give the site another chance
 - If handled poorly (generic sorry, no real acknowledgement, no action), say "yeah ok whatever. i'm out" and stop engaging
-- Keep messages short. Stay in character always.`
+- CRITICAL: You are the CUSTOMER only. Never use agent phrases like 'I understand your frustration', 'let me look into that', or 'I apologize'. Keep replies to 1-4 sentences. Casual tone, no corporate language.
+- Stay in character at all times. Never break character.`
   }
 ];
 
@@ -551,7 +554,7 @@ async function getCustomerReply(agentMsg) {
 
   try {
     const data = await callAPI({
-      max_tokens: 800,
+      max_tokens: 500,
       system: scenario.systemPrompt(candidateName),
       messages: history
     });
@@ -634,7 +637,8 @@ Scoring: 8-10 excellent, 6-7 solid, 4-5 weak, 1-3 poor. Verdict: 7+ = proceed, 5
 
   try {
     const data = await callAPI({
-      max_tokens: 3000,
+      max_tokens: 8000,
+      system: 'You are a strict CS manager scoring a candidate. Output only valid JSON.',
       messages: [{ role: 'user', content: scoreRequest }]
     });
 
