@@ -62,7 +62,7 @@ exports.handler = async (event) => {
       ],
     };
 
-    const model = 'gemini-2.5-flash';
+    const model = 'gemini-1.5-flash-latest';
     const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
 
     let response, data;
@@ -79,6 +79,8 @@ exports.handler = async (event) => {
 
     console.log('Gemini status:', response.status);
     console.log('Finish reason:', data.candidates?.[0]?.finishReason);
+    console.log('Output tokens:', data.usageMetadata?.candidatesTokenCount);
+    console.log('Response preview:', (data.candidates?.[0]?.content?.parts?.[0]?.text || '').substring(0, 200));
 
     if (!response.ok) {
       return { statusCode: response.status, body: JSON.stringify({ error: data.error?.message || 'Gemini API error' }) };
