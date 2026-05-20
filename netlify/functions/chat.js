@@ -53,7 +53,7 @@ exports.handler = async (event) => {
     const geminiBody = {
       system_instruction: system ? { parts: [{ text: system }] } : undefined,
       contents: merged,
-      generationConfig: { maxOutputTokens: max_tokens || 16000, temperature: 0.7 },
+      generationConfig: { maxOutputTokens: max_tokens || 300, temperature: 0.7 },
       safetySettings: [
         { category: 'HARM_CATEGORY_HARASSMENT', threshold: 'BLOCK_NONE' },
         { category: 'HARM_CATEGORY_HATE_SPEECH', threshold: 'BLOCK_NONE' },
