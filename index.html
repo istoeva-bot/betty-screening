@@ -312,7 +312,7 @@ let scenario = null;
 let history = [];
 let customerMsgCount = 0;
 let consecutiveErrors = 0;
-const MAX_CUSTOMER_MSGS = 10;   // agent = user role, customer = assistant role
+const MAX_CUSTOMER_MSGS = 7;   // agent = user role, customer = assistant role
 let isBusy = false;
 let isFinished = false;
 let scoreData = null;
@@ -627,25 +627,18 @@ You observed a live chat simulation. Candidate: "${candidateName}". Scenario: "$
 Transcript:
 ${transcript}
 
-Score the candidate strictly as a CS Agent based only on what they actually wrote. Return ONLY this JSON, no other text:
+IMPORTANT CONTEXT: This is an entry-level candidate seeing Betty for the first time. Judge their natural instincts and potential, not product mastery. A warm, empathetic candidate who gets a policy detail slightly wrong is still a strong candidate — we can train knowledge, we cannot train empathy.
 
-\`\`\`json
-{
-  "scores": {
-    "greeting_and_tone": <1-10>,
-    "empathy_and_warmth": <1-10>,
-    "policy_knowledge": <1-10>,
-    "de_escalation": <1-10>,
-    "clarity": <1-10>,
-    "resolution": <1-10>
-  },
-  "overall": <1-10>,
-  "verdict": "proceed" | "hold" | "decline",
-  "summary": "<2-3 sentences for the hiring manager: specific strengths, specific gaps, overall fit>"
-}
-\`\`\`
+Score based on the following, with soft skills weighted more heavily than policy or resolution:
 
-Scoring: 8-10 excellent, 6-7 solid, 4-5 weak, 1-3 poor. Verdict: 7+ = proceed, 5-6 = hold, <5 = decline.`;
+- greeting_and_tone: Did they open warmly and maintain a friendly, professional tone throughout?
+- empathy_and_warmth: HIGH WEIGHT — Did they acknowledge frustration before jumping to solutions? Did they make the customer feel heard?
+- de_escalation: HIGH WEIGHT — Did they handle pushback calmly without becoming defensive or robotic?
+- clarity: Did they clearly communicate what they could and couldn't do?
+- policy_knowledge: LOW WEIGHT — Basic understanding only expected. Minor errors are fine for entry-level.
+- resolution: LOW WEIGHT — The customer is designed to be difficult. Credit genuine attempts, not just outcomes.
+
+Return ONLY this JSON, no other text:\n\n\\`\\`\\`json\n{\n  "scores": {\n    "greeting_and_tone": <1-10>,\n    "empathy_and_warmth": <1-10>,\n    "policy_knowledge": <1-10>,\n    "de_escalation": <1-10>,\n    "clarity": <1-10>,\n    "resolution": <1-10>\n  },\n  "overall": <1-10>,\n  "verdict": "proceed" | "hold" | "decline",\n  "summary": "<2-3 sentences for the hiring manager: focus on communication style, empathy, and potential — cite specific moments from the transcript>"\n}\n\\`\\`\\`\n\nScoring bands: 8-10 excellent, 6-7 solid, 4-5 developing, 1-3 poor. Verdict: 6+ = proceed, 4-5 = hold, under 4 = decline. Be fair — a warm candidate with imperfect policy knowledge should score well.`;
 
   try {
     const data = await callAPI({
