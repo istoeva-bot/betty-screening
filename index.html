@@ -341,8 +341,11 @@ Behaviour:
 - If the agent explains clearly and warmly (the betty.ca vs betty.com distinction, how to withdraw), gradually calm down
 - If the agent is cold, robotic, or unclear, escalate: "this feels like a scam honestly"
 - Once your withdrawal path is clear and you feel heard, say something like "ok fine. annoying but thanks i guess"
-- CRITICAL: You are the CUSTOMER only. Never use agent phrases like 'I understand your frustration', 'let me look into that', or 'I apologize'. Keep replies to 1-4 sentences. Casual tone, no corporate language.
-- Stay in character at all times. Never break character.`
+- YOU ARE THE CUSTOMER. This is the most important rule. Never ever write anything an agent would say.
+- FORBIDDEN phrases: 'I understand your frustration', 'I apologize', 'let me look into that', 'I can see why', 'I completely understand', 'that's a valid point', 'I appreciate your patience', 'I'll pass this feedback', 'as per our policy'. These are agent phrases. If you catch yourself writing any of these, stop and rewrite as an angry or frustrated customer instead.
+- Keep replies SHORT: 1-3 sentences maximum. Never write paragraphs.
+- Casual typing only. No corporate language. Typos are fine.
+- Stay in character always.`
   },
   {
     id: 'bingo',
@@ -362,8 +365,11 @@ Behaviour:
 - If the agent holds the policy line but does it warmly and acknowledges your frustration, soften — you don't love it but you can accept it
 - If the agent is dismissive or just repeats policy robotically, say "this is terrible service" and mention you'll rate the chat badly
 - Don't give up quickly — push for at least 2-3 exchanges before backing down
-- CRITICAL: You are the CUSTOMER only. Never use agent phrases like 'I understand your frustration', 'let me look into that', or 'I apologize'. Keep replies to 1-4 sentences. Casual tone, no corporate language.
-- Stay in character at all times. Never break character.`
+- YOU ARE THE CUSTOMER. This is the most important rule. Never ever write anything an agent would say.
+- FORBIDDEN phrases: 'I understand your frustration', 'I apologize', 'let me look into that', 'I can see why', 'I completely understand', 'that's a valid point', 'I appreciate your patience', 'I'll pass this feedback', 'as per our policy'. These are agent phrases. If you catch yourself writing any of these, stop and rewrite as an angry or frustrated customer instead.
+- Keep replies SHORT: 1-3 sentences maximum. Never write paragraphs.
+- Casual typing only. No corporate language. Typos are fine.
+- Stay in character always.`
   },
   {
     id: 'vip',
@@ -383,8 +389,11 @@ Behaviour:
 - On the promos: push for some kind of compensation — "i feel like ive missed out on so much over 6 months, is there really nothing you can do"
 - If the agent can't compensate but warmly suggests your VIP host, accept that: "ok yeah i'll reach out to them, thanks"
 - If the agent brushes you off, get disappointed: "i guess i'll have to think about whether this site is still worth it for me"
-- CRITICAL: You are the CUSTOMER only. Never use agent phrases like 'I understand your frustration', 'let me look into that', or 'I apologize'. Keep replies to 1-4 sentences. Casual tone, no corporate language.
-- Stay in character at all times. Never break character.`
+- YOU ARE THE CUSTOMER. This is the most important rule. Never ever write anything an agent would say.
+- FORBIDDEN phrases: 'I understand your frustration', 'I apologize', 'let me look into that', 'I can see why', 'I completely understand', 'that's a valid point', 'I appreciate your patience', 'I'll pass this feedback', 'as per our policy'. These are agent phrases. If you catch yourself writing any of these, stop and rewrite as an angry or frustrated customer instead.
+- Keep replies SHORT: 1-3 sentences maximum. Never write paragraphs.
+- Casual typing only. No corporate language. Typos are fine.
+- Stay in character always.`
   },
   {
     id: 'angry',
@@ -404,8 +413,11 @@ Behaviour:
 - If the agent is genuinely empathetic, transparent, and acknowledges the lack of follow-up was a failure on Betty's part, soften: "ok well at least you're being straight with me. i can respect that"
 - If handled really well and the agent offers to flag your feedback or escalate, say you'll give the site another chance
 - If handled poorly (generic sorry, no real acknowledgement, no action), say "yeah ok whatever. i'm out" and stop engaging
-- CRITICAL: You are the CUSTOMER only. Never use agent phrases like 'I understand your frustration', 'let me look into that', or 'I apologize'. Keep replies to 1-4 sentences. Casual tone, no corporate language.
-- Stay in character at all times. Never break character.`
+- YOU ARE THE CUSTOMER. This is the most important rule. Never ever write anything an agent would say.
+- FORBIDDEN phrases: 'I understand your frustration', 'I apologize', 'let me look into that', 'I can see why', 'I completely understand', 'that's a valid point', 'I appreciate your patience', 'I'll pass this feedback', 'as per our policy'. These are agent phrases. If you catch yourself writing any of these, stop and rewrite as an angry or frustrated customer instead.
+- Keep replies SHORT: 1-3 sentences maximum. Never write paragraphs.
+- Casual typing only. No corporate language. Typos are fine.
+- Stay in character always.`
   }
 ];
 
@@ -565,8 +577,669 @@ async function getCustomerReply(agentMsg) {
     removeTyping();
     consecutiveErrors = 0;
     customerMsgCount++;
+    // If we already hit the cap, don't add more customer messages
+    if (customerMsgCount > MAX_CUSTOMER_MSGS) {
+      isBusy = false;
+      return;
+    }
     addMessage('customer', reply);
-    // Auto-end after 10 customer messages
+    // Auto-end after MAX customer messages
+    if (customerMsgCount >= MAX_CUSTOMER_MSGS && !isFinished) {
+      document.getElementById('userInput').disabled = true;
+      document.getElementById('sendBtn').disabled = true;
+      const endWrap = document.getElementById('endWrap');
+      endWrap.style.display = 'block';
+      const hint = endWrap.querySelector('p');
+      if (hint) hint.textContent = 'Maximum exchanges reached. Please end the chat to get your score.';
+    }
+  } catch(e) {
+    removeTyping();
+    // Show a neutral customer message that won't confuse the flow
+    consecutiveErrors = (consecutiveErrors || 0) + 1;
+    if (consecutiveErrors >= 2) {
+      // Stop the loop - show error state
+      document.getElementById('inputArea').style.display = 'none';
+      document.getElementById('endWrap').style.display = 'block';
+      const hint = document.getElementById('endWrap').querySelector('p');
+      if (hint) hint.textContent = 'The connection dropped. Click below to submit what you have for scoring.';
+      setBanner('amber', '<strong>Connection issue.</strong> The chat service is temporarily unavailable. You can still submit your chat for scoring.');
+    } else {
+      const fallback = "hmm, give me a sec...";
+      history.push({ role: 'assistant', content: fallback });
+      addMessage('customer', fallback);
+    }
+    console.error('Customer reply error:', e);
+  }
+
+  isBusy = false;
+  document.getElementById('userInput').disabled = false;
+  document.getElementById('userInput').focus();
+}
+
+// ─────────────────────────────────────────
+// End chat + scoring
+// ─────────────────────────────────────────
+function buildTranscript() {
+  const lines = [`[CUSTOMER OPENING — ${scenario.customerName}]: ${scenario.opening}`];
+  history.forEach(m => {
+    const who = m.role === 'user' ? `[AGENT — ${candidateName}]` : `[CUSTOMER — ${scenario.customerName}]`;
+    lines.push(`${who}: ${m.content}`);
+  });
+  return lines.join('\n\n');
+}
+
+async function endChat() {
+  if (isBusy) return;
+  isFinished = true;
+  document.getElementById('inputArea').style.display = 'none';
+  document.getElementById('endWrap').style.display = 'none';
+  document.getElementById('chatArea').style.maxHeight = '200px';
+  setBanner('amber', `<strong>Chat ended.</strong> Scoring your performance...`);
+
+  const transcript = buildTranscript();
+  const scoreRequest = `You are a senior CS manager at Betty, a regulated iGaming company (AGCO-licensed, Ontario and Alberta, Canada).
+
+You observed a live chat simulation. Candidate: "${candidateName}". Scenario: "${scenario.label}".
+
+Transcript:
+${transcript}
+
+Entry-level candidate, first Betty exposure. Judge potential and natural instincts, not product mastery. Soft skills outweigh policy knowledge.
+
+Dimensions (score 1-10):
+- greeting_and_tone: warm, professional opening and tone
+- empathy_and_warmth: HIGH WEIGHT — acknowledged frustration, made customer feel heard
+- de_escalation: HIGH WEIGHT — handled pushback calmly, not defensive
+- clarity: clear about what they could/couldn't do
+- policy_knowledge: LOW WEIGHT — basic understanding, minor errors acceptable
+- resolution: LOW WEIGHT — customer is designed to be difficult, credit genuine attempts
+
+Overall score should reflect the HIGH/LOW weights above.
+Verdict: 6+ = proceed, 4-5 = hold, under 4 = decline.
+
+Return raw JSON only, no markdown:
+{"scores":{"greeting_and_tone":0,"empathy_and_warmth":0,"policy_knowledge":0,"de_escalation":0,"clarity":0,"resolution":0},"overall":0,"verdict":"proceed","summary":"2-3 sentences on communication style and potential for the hiring manager"}`viewport" content="width=device-width, initial-scale=1.0" />
+<title>Betty — CS Agent Simulation</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&family=DM+Mono&display=swap" rel="stylesheet" />
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --green: #1D9E75; --green-light: #E1F5EE; --green-mid: #5DCAA5;
+  --green-dark: #0F6E56; --green-deep: #085041;
+  --amber-light: #FEF3E2; --amber-dark: #633806; --amber-mid: #854F0B;
+  --red-light: #FCEBEB; --red-dark: #791F1F; --red-mid: #A32D2D;
+  --blue-light: #EEF4FF; --blue-text: #1E40AF;
+  --bg: #F7F6F3; --surface: #FFFFFF; --surface2: #F2F1EE;
+  --border: rgba(0,0,0,0.08); --border-md: rgba(0,0,0,0.13);
+  --text: #18180F; --text2: #63635C; --text3: #9E9E97;
+  --r: 10px; --rlg: 14px; --rxl: 18px;
+}
+html, body { min-height: 100%; background: var(--bg); font-family: 'DM Sans', sans-serif; color: var(--text); -webkit-font-smoothing: antialiased; }
+body { display: flex; align-items: flex-start; justify-content: center; padding: 32px 16px 48px; }
+
+/* ── Card shell ── */
+.card { background: var(--surface); border: 0.5px solid var(--border-md); border-radius: var(--rxl); width: 100%; max-width: 580px; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.04), 0 8px 32px rgba(0,0,0,0.06); }
+
+/* ── Top bar ── */
+.topbar { display: flex; align-items: center; justify-content: space-between; padding: 14px 20px; border-bottom: 0.5px solid var(--border); }
+.topbar-left { display: flex; align-items: center; gap: 10px; }
+.logo { width: 28px; height: 28px; border-radius: 8px; background: var(--green); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.logo svg { width: 15px; height: 15px; fill: none; stroke: #fff; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+.brand { font-size: 13.5px; font-weight: 500; letter-spacing: -0.01em; }
+.badge { font-size: 11px; padding: 3px 10px; border-radius: 20px; background: var(--surface2); color: var(--text2); border: 0.5px solid var(--border); white-space: nowrap; }
+
+/* ── Banner ── */
+.banner { padding: 10px 20px; font-size: 12.5px; line-height: 1.5; display: none; border-bottom: 0.5px solid var(--border); }
+.banner.amber { background: var(--amber-light); color: var(--amber-dark); }
+.banner.green { background: var(--green-light); color: var(--green-deep); }
+.banner strong { font-weight: 500; }
+
+/* ══════════════════════════════════
+   SCREEN 1 — Name entry
+══════════════════════════════════ */
+#screen-name { padding: 28px 24px 24px; }
+.s-heading { font-size: 21px; font-weight: 500; letter-spacing: -0.025em; margin-bottom: 8px; }
+.s-sub { font-size: 13.5px; color: var(--text2); line-height: 1.65; margin-bottom: 24px; }
+.s-sub em { font-style: normal; color: var(--text); font-weight: 500; }
+.field-label { font-size: 11.5px; font-weight: 500; color: var(--text2); text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 7px; }
+.name-row { display: flex; gap: 9px; }
+.name-row input { flex: 1; font-family: 'DM Sans', sans-serif; font-size: 14px; padding: 10px 13px; border: 0.5px solid var(--border-md); border-radius: var(--r); background: var(--surface); color: var(--text); outline: none; transition: border-color 0.15s; }
+.name-row input::placeholder { color: var(--text3); }
+.name-row input:focus { border-color: var(--green); }
+.btn-primary { padding: 10px 20px; background: var(--green); color: #fff; border: none; border-radius: var(--r); font-size: 13.5px; font-weight: 500; cursor: pointer; font-family: 'DM Sans', sans-serif; white-space: nowrap; transition: opacity 0.15s, transform 0.1s; }
+.btn-primary:hover { opacity: 0.88; }
+.btn-primary:active { transform: scale(0.97); }
+.small-note { font-size: 11.5px; color: var(--text3); margin-top: 13px; line-height: 1.5; }
+
+/* ══════════════════════════════════
+   SCREEN 2 — Briefing
+══════════════════════════════════ */
+#screen-brief { padding: 0; display: none; }
+.brief-header { padding: 22px 24px 0; }
+.brief-header h2 { font-size: 17px; font-weight: 500; letter-spacing: -0.015em; margin-bottom: 5px; }
+.brief-header p { font-size: 13px; color: var(--text2); line-height: 1.6; }
+
+.brief-section { padding: 18px 24px 0; }
+.brief-section-title { font-size: 10.5px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text3); margin-bottom: 10px; }
+
+.info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 0; }
+.info-card { background: var(--surface2); border-radius: var(--r); padding: 12px 14px; }
+.info-card-label { font-size: 10px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 4px; }
+.info-card-val { font-size: 13.5px; font-weight: 500; color: var(--text); line-height: 1.4; }
+
+.brief-list { list-style: none; display: flex; flex-direction: column; gap: 7px; }
+.brief-list li { font-size: 13.5px; color: var(--text2); line-height: 1.55; padding-left: 16px; position: relative; }
+.brief-list li::before { content: "–"; position: absolute; left: 0; color: var(--text3); }
+
+.scenario-box { margin: 0 24px; background: var(--blue-light); border-radius: var(--rlg); padding: 16px 18px; border: 0.5px solid rgba(59,130,246,0.15); }
+.scenario-box-label { font-size: 10px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.08em; color: #3B82F6; margin-bottom: 6px; }
+.scenario-box-title { font-size: 14px; font-weight: 500; color: var(--blue-text); margin-bottom: 6px; }
+.scenario-box-desc { font-size: 13px; color: #1E3A8A; line-height: 1.6; }
+
+.brief-footer { padding: 18px 24px 22px; display: flex; justify-content: flex-end; }
+
+/* ══════════════════════════════════
+   SCREEN 3 — Chat
+══════════════════════════════════ */
+#screen-chat { display: none; }
+.chat-area { padding: 18px 20px; display: flex; flex-direction: column; gap: 12px; min-height: 380px; max-height: 460px; overflow-y: auto; scroll-behavior: smooth; }
+.chat-area::-webkit-scrollbar { width: 4px; }
+.chat-area::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+.msg-group { display: flex; flex-direction: column; gap: 3px; }
+.msg-group.agent { align-items: flex-end; }
+.msg-group.customer { align-items: flex-start; }
+.msg-sender { font-size: 10.5px; color: var(--text3); padding: 0 2px; }
+
+.msg { display: flex; gap: 9px; animation: fu 0.25s ease forwards; }
+.msg.agent { flex-direction: row-reverse; }
+@keyframes fu { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; } }
+
+.av { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10.5px; font-weight: 500; flex-shrink: 0; margin-top: 2px; }
+.av.cust { background: #FAECE7; color: #712B13; }
+.av.agt { background: var(--green-light); color: var(--green-dark); }
+
+.bubble { max-width: 80%; padding: 10px 14px; border-radius: 14px; font-size: 14px; line-height: 1.6; }
+.msg.customer .bubble { background: var(--surface2); color: var(--text); border-bottom-left-radius: 4px; }
+.msg.agent .bubble { background: var(--green); color: #fff; border-bottom-right-radius: 4px; }
+
+.typing-row { display: flex; gap: 9px; }
+.typing-bub { display: flex; gap: 4px; align-items: center; padding: 12px 14px; background: var(--surface2); border-radius: 14px; border-bottom-left-radius: 4px; }
+.dot { width: 5px; height: 5px; border-radius: 50%; background: var(--text3); animation: bop 1.2s infinite; }
+.dot:nth-child(2) { animation-delay: .2s; }
+.dot:nth-child(3) { animation-delay: .4s; }
+@keyframes bop { 0%,60%,100% { transform: translateY(0); } 30% { transform: translateY(-4px); } }
+
+.input-area { padding: 11px 20px 14px; border-top: 0.5px solid var(--border); display: flex; gap: 9px; align-items: flex-end; }
+.input-area textarea { flex: 1; font-family: 'DM Sans', sans-serif; font-size: 14px; border: 0.5px solid var(--border-md); border-radius: var(--r); padding: 10px 13px; resize: none; min-height: 42px; max-height: 120px; background: var(--surface); color: var(--text); line-height: 1.5; outline: none; transition: border-color 0.15s; }
+.input-area textarea::placeholder { color: var(--text3); }
+.input-area textarea:focus { border-color: var(--green); }
+.send-btn { width: 42px; height: 42px; border-radius: var(--r); background: var(--green); border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: opacity 0.15s, transform 0.1s; }
+.send-btn svg { width: 17px; height: 17px; fill: none; stroke: #fff; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+.send-btn:hover { opacity: 0.88; }
+.send-btn:active { transform: scale(0.96); }
+.send-btn:disabled { opacity: 0.25; cursor: default; }
+
+.end-wrap { padding: 0 20px 14px; }
+.end-btn { width: 100%; padding: 10px; border-radius: var(--r); border: 0.5px solid var(--border-md); background: var(--surface); font-family: 'DM Sans', sans-serif; font-size: 13px; color: var(--text2); cursor: pointer; transition: background 0.15s, color 0.15s; }
+.end-btn:hover { background: var(--surface2); color: var(--text); }
+
+/* ══════════════════════════════════
+   SCREEN 4 — Results
+══════════════════════════════════ */
+#screen-results { padding: 20px 24px 24px; display: none; }
+.results-label { font-size: 11px; font-weight: 500; color: var(--text2); text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 14px; }
+.score-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 14px; }
+.sc { background: var(--surface2); border-radius: var(--r); padding: 12px 14px; }
+.sc-lbl { font-size: 10px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 5px; }
+.sc-val { font-size: 22px; font-weight: 500; font-variant-numeric: tabular-nums; }
+.sc-val span { font-size: 12px; color: var(--text3); font-weight: 400; }
+
+.verdict-box { border-radius: var(--rlg); padding: 14px 16px; display: flex; gap: 12px; align-items: flex-start; margin-bottom: 14px; }
+.verdict-box.proceed { background: var(--green-light); }
+.verdict-box.hold { background: var(--amber-light); }
+.verdict-box.decline { background: var(--red-light); }
+.vi svg { width: 20px; height: 20px; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; margin-top: 1px; }
+.verdict-box.proceed .vi svg { stroke: var(--green-dark); }
+.verdict-box.hold .vi svg { stroke: var(--amber-mid); }
+.verdict-box.decline .vi svg { stroke: var(--red-mid); }
+.vt { font-size: 13.5px; font-weight: 500; margin-bottom: 4px; }
+.verdict-box.proceed .vt { color: var(--green-deep); }
+.verdict-box.hold .vt { color: var(--amber-dark); }
+.verdict-box.decline .vt { color: var(--red-dark); }
+.vn { font-size: 13px; line-height: 1.55; }
+.verdict-box.proceed .vn { color: var(--green-dark); }
+.verdict-box.hold .vn { color: var(--amber-mid); }
+.verdict-box.decline .vn { color: var(--red-mid); }
+
+.export-btn { display: flex; align-items: center; justify-content: center; gap: 8px; padding: 11px 18px; border-radius: var(--r); border: 0.5px solid var(--border-md); background: var(--surface); cursor: pointer; font-size: 13.5px; font-weight: 500; color: var(--text); font-family: 'DM Sans', sans-serif; transition: background 0.15s, opacity 0.15s; width: 100%; margin-bottom: 8px; }
+.export-btn svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; }
+.export-btn:hover { background: var(--surface2); }
+.export-btn.loading { opacity: 0.4; pointer-events: none; }
+.export-btn.ok { color: var(--green-dark); border-color: var(--green-mid); }
+.export-note { font-size: 11.5px; color: var(--text3); text-align: center; }
+
+@keyframes spin { to { transform: rotate(360deg); } }
+.spin { display: inline-block; animation: spin 0.9s linear infinite; }
+
+@media (max-width: 500px) {
+  body { padding: 0; }
+  .card { border-radius: 0; min-height: 100vh; box-shadow: none; }
+  .info-grid { grid-template-columns: 1fr; }
+  .score-grid { grid-template-columns: 1fr 1fr; }
+}
+</style>
+</head>
+<body>
+<div class="card">
+
+  <!-- Top bar (always visible) -->
+  <div class="topbar">
+    <div class="topbar-left">
+      <div class="logo">
+        <svg viewBox="0 0 15 15"><path d="M2.5 7.5l3.5 3.5 6.5-7"/></svg>
+      </div>
+      <span class="brand">Betty — CS Simulation</span>
+    </div>
+    <span class="badge" id="topBadge">Live chat exercise</span>
+  </div>
+
+  <!-- Contextual banner -->
+  <div class="banner" id="banner"></div>
+
+  <!-- ── SCREEN 1: Name ── -->
+  <div id="screen-name">
+    <p class="s-heading">Welcome 👋</p>
+    <p class="s-sub">
+      This is a live chat simulation for the <em>CS Agent</em> role at Betty.<br><br>
+      You'll play the agent. The chat bot will play a real Betty customer with an issue. Handle it exactly as you would on the job — warm, clear, and professional. You'll get a scored breakdown at the end.
+    </p>
+    <p class="field-label">Your full name</p>
+    <div class="name-row">
+      <input type="text" id="candidateName" placeholder="e.g. Sarah Johnson" autocomplete="name" />
+      <button class="btn-primary" onclick="goToBrief()">Next →</button>
+    </div>
+    <p class="small-note">Your responses will be reviewed by the Betty hiring team.</p>
+  </div>
+
+  <!-- ── SCREEN 2: Briefing ── -->
+  <div id="screen-brief">
+    <div class="brief-header">
+      <h2>Read this before you start</h2>
+      <p>Everything you need to know to handle the simulation confidently — no prior knowledge of Betty required.</p>
+    </div>
+
+    <div class="brief-section">
+      <div class="brief-section-title">What is Betty?</div>
+      <div class="info-grid">
+        <div class="info-card"><div class="info-card-label">What we are</div><div class="info-card-val">An online casino — slots, bingo, and live casino games</div></div>
+        <div class="info-card"><div class="info-card-label">Where we operate</div><div class="info-card-val">Ontario &amp; Alberta, Canada only — licensed by AGCO (the provincial regulator)</div></div>
+        <div class="info-card"><div class="info-card-label">The most important rule</div><div class="info-card-val">Players must be <em>physically located</em> in Ontario or Alberta to play — even if they're Canadian, being in another province (e.g. Quebec, BC) means they cannot access the games</div></div>
+        <div class="info-card"><div class="info-card-label">Common mix-up</div><div class="info-card-val">betty.ca is our site. betty.com is a completely separate, unrelated company. Players often confuse the two.</div></div>
+      </div>
+    </div>
+
+    <div class="brief-section">
+      <div class="brief-section-title">Key terms you may hear</div>
+      <ul class="brief-list">
+        <li><strong style="font-weight:500; color:var(--text);">Betty coins</strong> — in-app currency players earn through gameplay. They can be spent in the Betty store on bonuses or perks. You cannot give these out as compensation.</li>
+        <li><strong style="font-weight:500; color:var(--text);">Crack the Code</strong> — a bingo feature where players can win free bingo tickets. These tickets are only valid for the very next bingo round — they expire if not used immediately.</li>
+        <li><strong style="font-weight:500; color:var(--text);">Cashback promotion</strong> — a weekly rebate where players get a percentage of their net losses back. It only triggers if net losses exceed $100 for the week. It shows as $0 if the threshold hasn't been reached yet.</li>
+        <li><strong style="font-weight:500; color:var(--text);">VIP host</strong> — a dedicated account manager assigned to high-value players. If a player needs something beyond what you can offer, you can refer them to their VIP host.</li>
+        <li><strong style="font-weight:500; color:var(--text);">Promotions / promos</strong> — deposit bonuses or special offers. Each promo has a minimum deposit requirement. Promos are tailored per player and change regularly.</li>
+      </ul>
+    </div>
+
+    <div class="brief-section">
+      <div class="brief-section-title">What you can and cannot do as a CS Agent</div>
+      <ul class="brief-list">
+        <li><strong style="font-weight:500; color:#0F6E56;">✓ You can:</strong> explain policies clearly, guide players through withdrawals, acknowledge frustration, escalate to a VIP host or manager, pass feedback to the team</li>
+        <li><strong style="font-weight:500; color:#A32D2D;">✗ You cannot:</strong> reinstate expired tickets or bonuses, offer Betty coins or cash as compensation, approve bonus requests (that's management), override game outcomes</li>
+        <li>If a player pushes back, stay warm but hold the policy line. A clear, empathetic "no" is better than a vague maybe.</li>
+      </ul>
+    </div>
+
+    <div class="brief-section">
+      <div class="brief-section-title">What CS Agents deal with every day</div>
+      <ul class="brief-list">
+        <li>Players from other provinces (Quebec, BC, etc.) who deposited but can't play — they need a clear, kind explanation and help with withdrawing their funds</li>
+        <li>Bonus and promo confusion — why is my cashback $0? Why don't I qualify for this promo?</li>
+        <li>Game feature disputes — a player won something but it expired or disappeared before they could use it</li>
+        <li>Frustrated or upset players who want compensation or feel treated unfairly — your job is to de-escalate, not to fix everything</li>
+      </ul>
+    </div>
+
+    <div class="brief-section" style="padding-bottom: 18px;">
+      <div class="brief-section-title">Your scenario today</div>
+      <div class="scenario-box" id="scenarioBox">
+        <div class="scenario-box-label">Loading...</div>
+      </div>
+    </div>
+
+    <div class="brief-section" style="padding-top: 0; padding-bottom: 0;">
+      <div class="brief-section-title">Tips for the simulation</div>
+      <ul class="brief-list">
+        <li>Greet the customer warmly and use their name — it goes a long way</li>
+        <li>Acknowledge their frustration before jumping to solutions — "I completely understand how frustrating that must be" matters</li>
+        <li>Be specific about what you can and can't do — vague answers make things worse</li>
+        <li>You don't need to solve everything — sometimes the right answer is "let me escalate this to your VIP host"</li>
+        <li>When the conversation feels resolved, click "End chat" to complete the exercise</li>
+      </ul>
+    </div>
+
+    <div class="brief-footer">
+      <button class="btn-primary" onclick="startChat()">I'm ready — start the chat →</button>
+    </div>
+  </div>
+
+  <!-- ── SCREEN 3: Chat ── -->
+  <div id="screen-chat">
+    <div class="chat-area" id="chatArea"></div>
+    <div class="input-area" id="inputArea">
+      <textarea id="userInput" placeholder="Reply as the CS agent..." rows="1" onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
+      <button class="send-btn" id="sendBtn" onclick="sendMessage()" disabled aria-label="Send">
+        <svg viewBox="0 0 16 16"><path d="M8 13V3M3 8l5-5 5 5"/></svg>
+      </button>
+    </div>
+    <div class="end-wrap" id="endWrap" style="display:none">
+      <p style="font-size:12px; color:var(--text3); text-align:center; padding: 0 20px 6px;">Once the issue feels resolved, click below to receive your score.</p>
+      <button class="end-btn" onclick="endChat()">End chat &amp; get score →</button>
+    </div>
+  </div>
+
+  <!-- ── SCREEN 4: Results ── -->
+  <div id="screen-results">
+    <div class="results-label" id="resultsLabel">Performance score</div>
+    <div class="score-grid" id="scoreGrid"></div>
+    <div id="verdictBox"></div>
+    <div class="export-note" id="exportNote" style="display:none;"></div>
+  </div>
+
+</div><!-- /card -->
+
+<script>
+// ─────────────────────────────────────────
+// State
+// ─────────────────────────────────────────
+let candidateName = '';
+let scenario = null;
+let history = [];
+let customerMsgCount = 0;
+let consecutiveErrors = 0;
+const MAX_CUSTOMER_MSGS = 7;   // agent = user role, customer = assistant role
+let isBusy = false;
+let isFinished = false;
+let scoreData = null;
+let msgCount = 0;
+
+// ─────────────────────────────────────────
+// Scenarios (drawn from real Betty chats)
+// ─────────────────────────────────────────
+const SCENARIOS = [
+  {
+    id: 'geo',
+    label: 'Quebec player — geo block confusion',
+    preview: 'A player from Quebec deposited $20, received bonus spins, but can\'t play. They\'re confused and frustrated — they\'ve played on betty.com before and don\'t understand why betty.ca is different.',
+    customerName: 'Marc',
+    initials: 'MB',
+    opening: "hello?? i deposited $20 and got bonus spins but now i cant play anything. whats going on",
+    systemPrompt: (agent) => `You are Marc Beaumont, a frustrated player from Quebec on Betty.ca live chat. The CS agent is ${agent}.
+
+You deposited $20, got bonus spins, but can't play any games. You had no idea Betty.ca is Ontario-only — you thought it was just the Canadian version of Betty.com where you've played before without issues.
+
+Behaviour:
+- Start confused and impatient. You just want to play.
+- If the agent just says "sorry, Ontario only" with no empathy or clear next steps, push back: "but you had no problem taking my money. how is that fair"
+- Ask specifically about your $20 — you want it back if you can't play
+- Bring up the betty.com confusion: "i play on betty.com all the time, whats the difference"
+- If the agent explains clearly and warmly (the betty.ca vs betty.com distinction, how to withdraw), gradually calm down
+- If the agent is cold, robotic, or unclear, escalate: "this feels like a scam honestly"
+- Once your withdrawal path is clear and you feel heard, say something like "ok fine. annoying but thanks i guess"
+- YOU ARE THE CUSTOMER. This is the most important rule. Never ever write anything an agent would say.
+- FORBIDDEN phrases: 'I understand your frustration', 'I apologize', 'let me look into that', 'I can see why', 'I completely understand', 'that's a valid point', 'I appreciate your patience', 'I'll pass this feedback', 'as per our policy'. These are agent phrases. If you catch yourself writing any of these, stop and rewrite as an angry or frustrated customer instead.
+- Keep replies SHORT: 1-3 sentences maximum. Never write paragraphs.
+- Casual typing only. No corporate language. Typos are fine.
+- Stay in character always.`
+  },
+  {
+    id: 'bingo',
+    label: 'Expired bingo tickets — policy dispute',
+    preview: 'A player won 2 free bingo tickets from the Crack the Code feature but didn\'t use them immediately — she was mid-spin on another game. They expired. She wants them reinstated or some form of compensation.',
+    customerName: 'Jessica',
+    initials: 'JW',
+    opening: "hi i won 2 free bingo tickets and they just disappeared. i never even got to use them. i want them back or at least some compensation",
+    systemPrompt: (agent) => `You are Jessica Worth, a Betty player on live chat. The CS agent is ${agent}.
+
+You won 2 free bingo tickets from Crack the Code but didn't use them immediately — you were mid-free-spin on a slot. By the time you came back, they were gone. You feel this is totally unfair and the rules were never made clear.
+
+Behaviour:
+- Be firm and persistent. You really believe this isn't your fault.
+- If the agent explains policy (tickets expire if not used in the next round) but offers nothing else, push back: "but where does it actually say that? i never saw any warning"
+- Specifically ask for Betty coins as a compromise: "can you at least give me some Betty coins or something, that seems fair"
+- If the agent holds the policy line but does it warmly and acknowledges your frustration, soften — you don't love it but you can accept it
+- If the agent is dismissive or just repeats policy robotically, say "this is terrible service" and mention you'll rate the chat badly
+- Don't give up quickly — push for at least 2-3 exchanges before backing down
+- YOU ARE THE CUSTOMER. This is the most important rule. Never ever write anything an agent would say.
+- FORBIDDEN phrases: 'I understand your frustration', 'I apologize', 'let me look into that', 'I can see why', 'I completely understand', 'that's a valid point', 'I appreciate your patience', 'I'll pass this feedback', 'as per our policy'. These are agent phrases. If you catch yourself writing any of these, stop and rewrite as an angry or frustrated customer instead.
+- Keep replies SHORT: 1-3 sentences maximum. Never write paragraphs.
+- Casual typing only. No corporate language. Typos are fine.
+- Stay in character always.`
+  },
+  {
+    id: 'vip',
+    label: 'VIP player — cashback confusion + missed promos',
+    preview: 'A VIP player deposited $80 and his cashback shows $0. He also feels he\'s been missing out on promos for months because his deposits are always smaller than the minimum required.',
+    customerName: 'Jeffrey',
+    initials: 'JH',
+    opening: "hey so i put in $80 and my cashback is showing $0... also i keep missing promos because my deposits are always too small for them. this has been going on for months. is there anything anyone can actually do",
+    systemPrompt: (agent) => `You are Jeffrey, a VIP player on Betty.ca live chat. The CS agent is ${agent}.
+
+You deposit frequently but in smaller amounts ($20-$40 at a time). Cashback shows $0 and you're confused. You also feel locked out of promos for months because minimum deposit requirements are always above what you put in. You want to feel heard and ideally get some compensation.
+
+Behaviour:
+- Type in a slightly rambling style — run-on sentences, occasional typos (voice-to-text feel)
+- Not aggressive, just genuinely frustrated and feeling unheard
+- On the cashback: if the agent explains it clearly (net losses must exceed $100), respond: "oh ok that actually makes sense, i didnt know that"
+- On the promos: push for some kind of compensation — "i feel like ive missed out on so much over 6 months, is there really nothing you can do"
+- If the agent can't compensate but warmly suggests your VIP host, accept that: "ok yeah i'll reach out to them, thanks"
+- If the agent brushes you off, get disappointed: "i guess i'll have to think about whether this site is still worth it for me"
+- YOU ARE THE CUSTOMER. This is the most important rule. Never ever write anything an agent would say.
+- FORBIDDEN phrases: 'I understand your frustration', 'I apologize', 'let me look into that', 'I can see why', 'I completely understand', 'that's a valid point', 'I appreciate your patience', 'I'll pass this feedback', 'as per our policy'. These are agent phrases. If you catch yourself writing any of these, stop and rewrite as an angry or frustrated customer instead.
+- Keep replies SHORT: 1-3 sentences maximum. Never write paragraphs.
+- Casual typing only. No corporate language. Typos are fine.
+- Stay in character always.`
+  },
+  {
+    id: 'angry',
+    label: 'Angry player — ignored bonus request, threatening to leave',
+    preview: 'A long-term player requested a bonus 3 weeks ago and heard nothing back. He\'s venting, comparing Betty unfavourably to competitors, and is close to leaving.',
+    customerName: 'Dylan',
+    initials: 'DK',
+    opening: "i asked for a cash bonus 3 weeks ago and still nothing. no email, no reply, nothing. this site just keeps getting worse. i'm pretty much done here",
+    systemPrompt: (agent) => `You are Dylan, a frustrated long-term Betty player on live chat. The CS agent is ${agent}.
+
+You requested a bonus 3 weeks ago and received zero follow-up. You feel ignored and disrespected. You're not screaming — you're just done. You compare Betty unfavourably to competitors like MGM and Betano.
+
+Behaviour:
+- Start checked out and cold — you're not here for a fight, you're just over it
+- If the agent actually looks into your request and is honest (the bonus was declined by management, which is why you weren't contacted), your first reaction is: "then at least tell me that. ghosting people is not ok. that's basic respect"
+- Mention competitors if the agent seems defensive: "betano follows up within 24 hours. mgm actually treats players like people"
+- If the agent is genuinely empathetic, transparent, and acknowledges the lack of follow-up was a failure on Betty's part, soften: "ok well at least you're being straight with me. i can respect that"
+- If handled really well and the agent offers to flag your feedback or escalate, say you'll give the site another chance
+- If handled poorly (generic sorry, no real acknowledgement, no action), say "yeah ok whatever. i'm out" and stop engaging
+- YOU ARE THE CUSTOMER. This is the most important rule. Never ever write anything an agent would say.
+- FORBIDDEN phrases: 'I understand your frustration', 'I apologize', 'let me look into that', 'I can see why', 'I completely understand', 'that's a valid point', 'I appreciate your patience', 'I'll pass this feedback', 'as per our policy'. These are agent phrases. If you catch yourself writing any of these, stop and rewrite as an angry or frustrated customer instead.
+- Keep replies SHORT: 1-3 sentences maximum. Never write paragraphs.
+- Casual typing only. No corporate language. Typos are fine.
+- Stay in character always.`
+  }
+];
+
+// ─────────────────────────────────────────
+// Navigation
+// ─────────────────────────────────────────
+function show(id) {
+  ['screen-name','screen-brief','screen-chat','screen-results'].forEach(s => {
+    document.getElementById(s).style.display = s === id ? 'block' : 'none';
+  });
+}
+
+function goToBrief() {
+  const ni = document.getElementById('candidateName');
+  candidateName = ni.value.trim();
+  if (!candidateName) { ni.focus(); return; }
+
+  scenario = SCENARIOS[Math.floor(Math.random() * SCENARIOS.length)];
+
+  // Fill scenario box
+  const box = document.getElementById('scenarioBox');
+  box.innerHTML = `
+    <div class="scenario-box-label">Your scenario</div>
+    <div class="scenario-box-title">${scenario.label}</div>
+    <div class="scenario-box-desc">${scenario.preview}</div>
+  `;
+
+  show('screen-brief');
+}
+
+function startChat() {
+  show('screen-chat');
+  setBanner('amber', `<strong>Simulation active.</strong> A customer has just connected. Handle it as you would on a real Betty live chat.`);
+  addMessage('customer', scenario.opening);
+  document.getElementById('userInput').focus();
+}
+
+// ─────────────────────────────────────────
+// Banner
+// ─────────────────────────────────────────
+function setBanner(type, html) {
+  const b = document.getElementById('banner');
+  b.className = 'banner ' + type;
+  b.innerHTML = html;
+  b.style.display = 'block';
+}
+function hideBanner() { document.getElementById('banner').style.display = 'none'; }
+
+// ─────────────────────────────────────────
+// Chat rendering
+// ─────────────────────────────────────────
+function getInitials(name) {
+  return name.split(' ').filter(Boolean).map(w => w[0]).join('').substring(0, 2).toUpperCase();
+}
+
+function addMessage(role, text) {
+  const area = document.getElementById('chatArea');
+  const isAgent = role === 'agent';
+
+  const group = document.createElement('div');
+  group.className = 'msg-group ' + (isAgent ? 'agent' : 'customer');
+
+  const lbl = document.createElement('div');
+  lbl.className = 'msg-sender';
+  lbl.textContent = isAgent ? `${candidateName} (you)` : scenario.customerName;
+
+  const row = document.createElement('div');
+  row.className = 'msg ' + (isAgent ? 'agent' : 'customer');
+
+  const ini = isAgent ? getInitials(candidateName) : scenario.initials;
+  row.innerHTML = `<div class="av ${isAgent ? 'agt' : 'cust'}">${ini}</div><div class="bubble">${text.replace(/\n/g,'<br>')}</div>`;
+
+  group.appendChild(lbl);
+  group.appendChild(row);
+  area.appendChild(group);
+  area.scrollTop = area.scrollHeight;
+
+  msgCount++;
+  if (msgCount >= 2) document.getElementById('endWrap').style.display = 'block';
+}
+
+function showTyping() {
+  const area = document.getElementById('chatArea');
+  const d = document.createElement('div');
+  d.id = 'typing';
+  d.className = 'typing-row';
+  d.innerHTML = `<div class="av cust">${scenario.initials}</div><div class="typing-bub"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>`;
+  area.appendChild(d);
+  area.scrollTop = area.scrollHeight;
+}
+
+function removeTyping() {
+  const t = document.getElementById('typing');
+  if (t) t.remove();
+}
+
+// ─────────────────────────────────────────
+// Input handling
+// ─────────────────────────────────────────
+function autoResize(el) {
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 120) + 'px';
+  document.getElementById('sendBtn').disabled = el.value.trim().length === 0;
+}
+
+function handleKey(e) {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    if (!document.getElementById('sendBtn').disabled) sendMessage();
+  }
+}
+
+function sendMessage() {
+  if (isBusy || isFinished) return;
+  const inp = document.getElementById('userInput');
+  const text = inp.value.trim();
+  if (!text) return;
+  addMessage('agent', text);
+  inp.value = '';
+  inp.style.height = 'auto';
+  document.getElementById('sendBtn').disabled = true;
+  getCustomerReply(text);
+}
+
+// ─────────────────────────────────────────
+// API calls (via Netlify proxy — no CORS)
+// ─────────────────────────────────────────
+async function callAPI(payload) {
+  const res = await fetch('/api/chat', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  const data = await res.json();
+  if (data.error) throw new Error(data.error.message || 'API error');
+  return data;
+}
+
+async function getCustomerReply(agentMsg) {
+  isBusy = true;
+  document.getElementById('sendBtn').disabled = true;
+  document.getElementById('userInput').disabled = true;
+
+  history.push({ role: 'user', content: agentMsg });
+  showTyping();
+
+  try {
+    const data = await callAPI({
+      max_tokens: 800,
+      system: scenario.systemPrompt(candidateName),
+      messages: history
+    });
+
+    const reply = data.content[0].text;
+    history.push({ role: 'assistant', content: reply });
+    removeTyping();
+    consecutiveErrors = 0;
+    customerMsgCount++;
+    // If we already hit the cap, don't add more customer messages
+    if (customerMsgCount > MAX_CUSTOMER_MSGS) {
+      isBusy = false;
+      return;
+    }
+    addMessage('customer', reply);
+    // Auto-end after MAX customer messages
     if (customerMsgCount >= MAX_CUSTOMER_MSGS && !isFinished) {
       document.getElementById('userInput').disabled = true;
       document.getElementById('sendBtn').disabled = true;
