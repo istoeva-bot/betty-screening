@@ -1,7 +1,7 @@
 [build]
   functions = "netlify/functions"
 
-[functions]
+[functions."*"]
   timeout = 30
 
 [[redirects]]
