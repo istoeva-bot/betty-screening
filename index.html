@@ -311,6 +311,7 @@ let candidateName = '';
 let scenario = null;
 let history = [];
 let customerMsgCount = 0;
+let consecutiveErrors = 0;
 const MAX_CUSTOMER_MSGS = 10;   // agent = user role, customer = assistant role
 let isBusy = false;
 let isFinished = false;
@@ -562,6 +563,7 @@ async function getCustomerReply(agentMsg) {
     const reply = data.content[0].text;
     history.push({ role: 'assistant', content: reply });
     removeTyping();
+    consecutiveErrors = 0;
     customerMsgCount++;
     addMessage('customer', reply);
     // Auto-end after 10 customer messages
@@ -576,9 +578,19 @@ async function getCustomerReply(agentMsg) {
   } catch(e) {
     removeTyping();
     // Show a neutral customer message that won't confuse the flow
-    const fallback = "hmm, give me a sec...";
-    history.push({ role: 'assistant', content: fallback });
-    addMessage('customer', fallback);
+    consecutiveErrors = (consecutiveErrors || 0) + 1;
+    if (consecutiveErrors >= 2) {
+      // Stop the loop - show error state
+      document.getElementById('inputArea').style.display = 'none';
+      document.getElementById('endWrap').style.display = 'block';
+      const hint = document.getElementById('endWrap').querySelector('p');
+      if (hint) hint.textContent = 'The connection dropped. Click below to submit what you have for scoring.';
+      setBanner('amber', '<strong>Connection issue.</strong> The chat service is temporarily unavailable. You can still submit your chat for scoring.');
+    } else {
+      const fallback = "hmm, give me a sec...";
+      history.push({ role: 'assistant', content: fallback });
+      addMessage('customer', fallback);
+    }
     console.error('Customer reply error:', e);
   }
 
