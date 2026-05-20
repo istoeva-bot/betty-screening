@@ -1,4 +1,4 @@
-const SHEETS_WEBHOOK = 'https://script.google.com/macros/s/AKfycbym9fMJd0SRgjq8lHM1N7fGpA8aUD4SFjSWs4_ZrRSIb6OW086ldYtIyDfTi123pN79/exec';
+const SHEETS_WEBHOOK = 'https://script.google.com/macros/s/AKfycbzLQbxCEjC_M5GwZs0cm6GeVS-BHgLxDDjsnXY2gQ6Z1jgIwp_-q9L4OBynfS7ryF28/exec';
 
 exports.handler = async (event) => {
   if (event.httpMethod !== "POST") {
