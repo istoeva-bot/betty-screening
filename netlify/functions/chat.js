@@ -62,11 +62,11 @@ exports.handler = async (event) => {
       ],
     };
 
-    const model = 'gemini-2.5-flash';
+    const model = 'gemini-1.5-flash-latest';
     const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
 
     let response, data;
-    for (let attempt = 0; attempt < 2; attempt++) {
+    for (let attempt = 0; attempt < 3; attempt++) {
       response = await fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -74,7 +74,7 @@ exports.handler = async (event) => {
       });
       data = await response.json();
       if (response.status !== 503) break;
-      await new Promise((r) => setTimeout(r, 2000));
+      await new Promise((r) => setTimeout(r, 3000));
     }
 
     console.log('Gemini status:', response.status);
