@@ -147,7 +147,7 @@ body { display: flex; align-items: flex-start; justify-content: center; padding:
   <!-- SCREEN 1: Name -->
   <div id="screen-name">
     <p class="s-heading">Welcome 👋</p>
-    <p class="s-sub">This is a live chat simulation for the <em>CS Agent</em> role at Betty.<br><br>You'll play the agent. The chat bot will play a real Betty customer with an issue. Handle it exactly as you would on the job — warm, clear, and professional.</p>
+    <p class="s-sub">This is a live chat simulation for the <em>CS Agent</em> role at Betty. It takes around <em>10-15 minutes</em>.<br><br>You'll play the agent. The chat bot will play a real Betty customer with a real issue. Handle it as you would on the job — warm, clear, and human.</p>
     <p class="field-label">Your full name</p>
     <div class="name-row">
       <input type="text" id="candidateName" placeholder="e.g. Sarah Johnson" autocomplete="name" />
@@ -159,58 +159,35 @@ body { display: flex; align-items: flex-start; justify-content: center; padding:
   <!-- SCREEN 2: Briefing -->
   <div id="screen-brief">
     <div class="brief-header">
-      <h2>Read this before you start</h2>
-      <p>Everything you need to know — no prior knowledge of Betty required.</p>
+      <h2>Before you start — quick read 📋</h2>
+      <p>No prior knowledge of Betty needed. This takes 2 minutes to read.</p>
     </div>
     <div class="brief-section">
-      <div class="brief-section-title">What is Betty?</div>
+      <div class="brief-section-title">About Betty</div>
       <div class="info-grid">
-        <div class="info-card"><div class="info-card-label">What we are</div><div class="info-card-val">An online casino — slots, bingo, and live casino games</div></div>
-        <div class="info-card"><div class="info-card-label">Where we operate</div><div class="info-card-val">Ontario &amp; Alberta, Canada — licensed by AGCO. Players must be physically present in the province they registered in to play.</div></div>
-        <div class="info-card"><div class="info-card-label">Most important rule</div><div class="info-card-val">Players must be <em>physically located</em> in Ontario or Alberta to play — being in another province (e.g. Quebec, BC) means they cannot access games</div></div>
-        <div class="info-card"><div class="info-card-label">Common mix-up</div><div class="info-card-val">betty.ca is our site. betty.com is a completely separate, unrelated company. Players often confuse the two.</div></div>
+        <div class="info-card"><div class="info-card-label">What we are</div><div class="info-card-val">Online casino — slots, bingo, live casino. Licensed by AGCO in Ontario &amp; Alberta.</div></div>
+        <div class="info-card"><div class="info-card-label">Key rule</div><div class="info-card-val">Players must be physically present in the province they registered in to play. Quebec, BC etc. = no access.</div></div>
+        <div class="info-card"><div class="info-card-label">Common mix-up</div><div class="info-card-val">betty.ca (us) and betty.com are completely separate, unrelated sites.</div></div>
+        <div class="info-card"><div class="info-card-label">Tone</div><div class="info-card-val">Warm and human, not robotic. Light emojis are fine. Say "players" not "customers".</div></div>
       </div>
     </div>
+
     <div class="brief-section">
-      <div class="brief-section-title">Key terms you may hear</div>
+      <div class="brief-section-title">Terms &amp; what you can do</div>
       <ul class="brief-list">
-        <li><strong style="font-weight:500;color:var(--text);">Betty coins</strong> — in-app currency players earn through gameplay, spendable in the Betty store. They have no cash value and you cannot give them out as compensation.</li>
-        <li><strong style="font-weight:500;color:var(--text);">Crack the Code</strong> — an in-game bingo feature where players can win free bingo tickets. These tickets are only valid for the very next bingo round — they expire if not used immediately and are not replaced.</li>
-        <li><strong style="font-weight:500;color:var(--text);">Cashback promotion</strong> — an automated weekly rebate on net losses. Only triggers if net losses exceed $100 for the week. Shows as $0 if the threshold hasn't been reached.</li>
-        <li><strong style="font-weight:500;color:var(--text);">VIP host</strong> — a dedicated account manager for high-value players. VIP hosts look after bonusing their players, so bonus requests should always be escalated to them rather than handled directly by CS.</li>
-        <li><strong style="font-weight:500;color:var(--text);">Promotions / promos</strong> — deposit bonuses or special offers with variable eligibility criteria, including a minimum deposit requirement or minimum play on a specific game. Sometimes refers to Betty loyalty and rewards programs rather than specific campaigns. Promos are tailored per player.</li>
+        <li><strong style="font-weight:500;color:var(--text);">Cashback</strong> — automated weekly rebate on net losses over $100. Shows $0 until threshold is hit.</li>
+        <li><strong style="font-weight:500;color:var(--text);">Crack the Code</strong> — in-game bingo feature that awards free tickets. Valid for the next round only — expire immediately and are not replaced.</li>
+        <li><strong style="font-weight:500;color:var(--text);">Betty coins</strong> — in-app currency with no cash value. Cannot be given as compensation.</li>
+        <li><strong style="font-weight:500;color:var(--text);">Promos</strong> — variable eligibility (min deposit, min play etc.), tailored per player.</li>
+        <li><strong style="font-weight:500;color:var(--text);">VIP host</strong> — dedicated manager for high-value players. Escalate all bonus requests to them.</li>
+        <li><strong style="font-weight:500;color:#1A7A5E;">✓ You can:</strong> explain policy, guide withdrawals, acknowledge frustration, escalate to VIP host or manager.</li>
+        <li><strong style="font-weight:500;color:#A32D2D;">✗ You cannot:</strong> reinstate expired rewards, offer coins/cash as compensation, approve bonuses, override game outcomes.</li>
       </ul>
     </div>
-    <div class="brief-section">
-      <div class="brief-section-title">What you can and cannot do</div>
-      <ul class="brief-list">
-        <li><strong style="font-weight:500;color:#0F6E56;">✓ You can:</strong> explain policies clearly, guide players through withdrawals, acknowledge frustration, escalate to a VIP host or manager, pass feedback to the team</li>
-        <li><strong style="font-weight:500;color:#A32D2D;">✗ You cannot:</strong> reinstate expired tickets or bonuses, offer Betty coins or cash as compensation, approve bonus requests, override game outcomes</li>
-        <li>If a player pushes back, stay warm but hold the policy line. A clear, empathetic "no" is better than a vague maybe.</li>
-      </ul>
-    </div>
-    <div class="brief-section">
-      <div class="brief-section-title">What CS Agents deal with every day</div>
-      <ul class="brief-list">
-        <li>Players from other provinces who deposited but can't play — need a clear, kind explanation and help withdrawing funds</li>
-        <li>Bonus and promo confusion — why is my cashback $0? Why don't I qualify for this promo?</li>
-        <li>Promotion or reward disputes — a player won a promotional reward (e.g. free tickets, bonus spins) but it expired or disappeared before they could use it</li>
-        <li>Frustrated players who want compensation or feel treated unfairly — de-escalate, don't fix everything</li>
-      </ul>
-    </div>
+
     <div class="brief-section" style="padding-bottom:18px;">
-      <div class="brief-section-title">Your scenario today</div>
+      <div class="brief-section-title">Your scenario</div>
       <div class="scenario-box" id="scenarioBox"><div class="scenario-box-label">Loading...</div></div>
-    </div>
-    <div class="brief-section" style="padding-top:0;padding-bottom:0;">
-      <div class="brief-section-title">Tips</div>
-      <ul class="brief-list">
-        <li>Greet the customer warmly and use their name</li>
-        <li>Acknowledge frustration before jumping to solutions</li>
-        <li>Be specific about what you can and can't do</li>
-        <li>You don't need to solve everything — escalating to a VIP host is a valid answer</li>
-        <li>When the conversation feels resolved, click "End chat"</li>
-      </ul>
     </div>
     <div class="brief-footer">
       <button class="btn-primary" onclick="startChat()">I'm ready — start the chat →</button>
