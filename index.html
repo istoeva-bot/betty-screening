@@ -10,8 +10,8 @@
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 :root {
-  --green: #1D9E75; --green-light: #E1F5EE; --green-mid: #5DCAA5;
-  --green-dark: #0F6E56; --green-deep: #085041;
+  --green: #F5C518; --green-light: #FEF9E7; --green-mid: #F8D84A;
+  --green-dark: #C49B0A; --green-deep: #8A6D07;
   --amber-light: #FEF3E2; --amber-dark: #633806; --amber-mid: #854F0B;
   --red-light: #FCEBEB; --red-dark: #791F1F; --red-mid: #A32D2D;
   --blue-light: #EEF4FF; --blue-text: #1E40AF;
@@ -44,8 +44,8 @@ body { display: flex; align-items: flex-start; justify-content: center; padding:
 .name-row { display: flex; gap: 9px; }
 .name-row input { flex: 1; font-family: 'DM Sans', sans-serif; font-size: 14px; padding: 10px 13px; border: 0.5px solid var(--border-md); border-radius: var(--r); background: var(--surface); color: var(--text); outline: none; transition: border-color 0.15s; }
 .name-row input::placeholder { color: var(--text3); }
-.name-row input:focus { border-color: var(--green); }
-.btn-primary { padding: 10px 20px; background: var(--green); color: #fff; border: none; border-radius: var(--r); font-size: 13.5px; font-weight: 500; cursor: pointer; font-family: 'DM Sans', sans-serif; white-space: nowrap; transition: opacity 0.15s, transform 0.1s; }
+.name-row input:focus { border-color: #F5C518; }
+.btn-primary { padding: 10px 20px; background: #F5C518; color: #1A1A1A; border: none; border-radius: var(--r); font-size: 13.5px; font-weight: 500; cursor: pointer; font-family: 'DM Sans', sans-serif; white-space: nowrap; transition: opacity 0.15s, transform 0.1s; }
 .btn-primary:hover { opacity: 0.88; }
 .btn-primary:active { transform: scale(0.97); }
 .small-note { font-size: 11.5px; color: var(--text3); margin-top: 13px; line-height: 1.5; }
@@ -78,10 +78,10 @@ body { display: flex; align-items: flex-start; justify-content: center; padding:
 @keyframes fu { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; } }
 .av { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10.5px; font-weight: 500; flex-shrink: 0; margin-top: 2px; }
 .av.cust { background: #FAECE7; color: #712B13; }
-.av.agt { background: var(--green-light); color: var(--green-dark); }
+.av.agt { background: #FEF9E7; color: #8A6D07; }
 .bubble { max-width: 80%; padding: 10px 14px; border-radius: 14px; font-size: 14px; line-height: 1.6; }
 .msg.customer .bubble { background: var(--surface2); color: var(--text); border-bottom-left-radius: 4px; }
-.msg.agent .bubble { background: var(--green); color: #fff; border-bottom-right-radius: 4px; }
+.msg.agent .bubble { background: #1A1A1A; color: #fff; border-bottom-right-radius: 4px; }
 .typing-row { display: flex; gap: 9px; }
 .typing-bub { display: flex; gap: 4px; align-items: center; padding: 12px 14px; background: var(--surface2); border-radius: 14px; border-bottom-left-radius: 4px; }
 .dot { width: 5px; height: 5px; border-radius: 50%; background: var(--text3); animation: bop 1.2s infinite; }
@@ -91,9 +91,9 @@ body { display: flex; align-items: flex-start; justify-content: center; padding:
 .input-area { padding: 11px 20px 14px; border-top: 0.5px solid var(--border); display: flex; gap: 9px; align-items: flex-end; }
 .input-area textarea { flex: 1; font-family: 'DM Sans', sans-serif; font-size: 14px; border: 0.5px solid var(--border-md); border-radius: var(--r); padding: 10px 13px; resize: none; min-height: 42px; max-height: 120px; background: var(--surface); color: var(--text); line-height: 1.5; outline: none; transition: border-color 0.15s; }
 .input-area textarea::placeholder { color: var(--text3); }
-.input-area textarea:focus { border-color: var(--green); }
-.send-btn { width: 42px; height: 42px; border-radius: var(--r); background: var(--green); border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: opacity 0.15s, transform 0.1s; }
-.send-btn svg { width: 17px; height: 17px; fill: none; stroke: #fff; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+.input-area textarea:focus { border-color: #F5C518; }
+.send-btn { width: 42px; height: 42px; border-radius: var(--r); background: #1A1A1A; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: opacity 0.15s, transform 0.1s; }
+.send-btn svg { width: 17px; height: 17px; fill: none; stroke: #F5C518; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
 .send-btn:hover { opacity: 0.88; }
 .send-btn:active { transform: scale(0.96); }
 .send-btn:disabled { opacity: 0.25; cursor: default; }
@@ -131,12 +131,16 @@ body { display: flex; align-items: flex-start; justify-content: center; padding:
 </head>
 <body>
 <div class="card">
-  <div class="topbar">
-    <div class="topbar-left">
-      <div class="logo"><svg viewBox="0 0 15 15"><path d="M2.5 7.5l3.5 3.5 6.5-7"/></svg></div>
-      <span class="brand">Betty — CS Simulation</span>
+  <div class="topbar" style="background:#1A1A1A;border-bottom:none;padding:14px 20px;">
+    <div class="topbar-left" style="gap:11px;">
+      <div style="display:flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:50%;background:#F5C518;flex-shrink:0;">
+        <span style="font-size:15px;font-weight:800;color:#1A1A1A;font-family:'DM Sans',sans-serif;line-height:1;">B</span>
+      </div>
+      <span style="font-size:17px;font-weight:700;color:#fff;letter-spacing:-0.01em;font-family:'DM Sans',sans-serif;">Betty</span>
+      <div style="width:1px;height:16px;background:rgba(255,255,255,0.2);margin:0 2px;"></div>
+      <span style="font-size:12px;color:rgba(255,255,255,0.6);font-weight:400;">CS Agent Screening</span>
     </div>
-    <span class="badge" id="topBadge">Live chat exercise</span>
+    <span style="font-size:11px;padding:3px 10px;border-radius:20px;background:rgba(255,255,255,0.1);color:rgba(255,255,255,0.7);border:0.5px solid rgba(255,255,255,0.15);">Live chat exercise</span>
   </div>
   <div class="banner" id="banner"></div>
 
@@ -162,7 +166,7 @@ body { display: flex; align-items: flex-start; justify-content: center; padding:
       <div class="brief-section-title">What is Betty?</div>
       <div class="info-grid">
         <div class="info-card"><div class="info-card-label">What we are</div><div class="info-card-val">An online casino — slots, bingo, and live casino games</div></div>
-        <div class="info-card"><div class="info-card-label">Where we operate</div><div class="info-card-val">Ontario &amp; Alberta, Canada only — licensed by AGCO</div></div>
+        <div class="info-card"><div class="info-card-label">Where we operate</div><div class="info-card-val">Ontario &amp; Alberta, Canada — licensed by AGCO. Players must be physically present in the province they registered in to play.</div></div>
         <div class="info-card"><div class="info-card-label">Most important rule</div><div class="info-card-val">Players must be <em>physically located</em> in Ontario or Alberta to play — being in another province (e.g. Quebec, BC) means they cannot access games</div></div>
         <div class="info-card"><div class="info-card-label">Common mix-up</div><div class="info-card-val">betty.ca is our site. betty.com is a completely separate, unrelated company. Players often confuse the two.</div></div>
       </div>
@@ -170,11 +174,11 @@ body { display: flex; align-items: flex-start; justify-content: center; padding:
     <div class="brief-section">
       <div class="brief-section-title">Key terms you may hear</div>
       <ul class="brief-list">
-        <li><strong style="font-weight:500;color:var(--text);">Betty coins</strong> — in-app currency players earn through gameplay, spendable in the Betty store. You cannot give these out as compensation.</li>
-        <li><strong style="font-weight:500;color:var(--text);">Crack the Code</strong> — a bingo feature where players can win free bingo tickets. These tickets are only valid for the very next bingo round — they expire if not used immediately.</li>
-        <li><strong style="font-weight:500;color:var(--text);">Cashback promotion</strong> — a weekly rebate on net losses. Only triggers if net losses exceed $100 for the week. Shows as $0 if threshold hasn't been reached.</li>
-        <li><strong style="font-weight:500;color:var(--text);">VIP host</strong> — a dedicated account manager for high-value players. If a player needs something beyond what you can offer, refer them to their VIP host.</li>
-        <li><strong style="font-weight:500;color:var(--text);">Promotions / promos</strong> — deposit bonuses or special offers with a minimum deposit requirement, tailored per player.</li>
+        <li><strong style="font-weight:500;color:var(--text);">Betty coins</strong> — in-app currency players earn through gameplay, spendable in the Betty store. They have no cash value and you cannot give them out as compensation.</li>
+        <li><strong style="font-weight:500;color:var(--text);">Crack the Code</strong> — an in-game bingo feature where players can win free bingo tickets. These tickets are only valid for the very next bingo round — they expire if not used immediately and are not replaced.</li>
+        <li><strong style="font-weight:500;color:var(--text);">Cashback promotion</strong> — an automated weekly rebate on net losses. Only triggers if net losses exceed $100 for the week. Shows as $0 if the threshold hasn't been reached.</li>
+        <li><strong style="font-weight:500;color:var(--text);">VIP host</strong> — a dedicated account manager for high-value players. VIP hosts look after bonusing their players, so bonus requests should always be escalated to them rather than handled directly by CS.</li>
+        <li><strong style="font-weight:500;color:var(--text);">Promotions / promos</strong> — deposit bonuses or special offers with variable eligibility criteria, including a minimum deposit requirement or minimum play on a specific game. Sometimes refers to Betty loyalty and rewards programs rather than specific campaigns. Promos are tailored per player.</li>
       </ul>
     </div>
     <div class="brief-section">
@@ -190,7 +194,7 @@ body { display: flex; align-items: flex-start; justify-content: center; padding:
       <ul class="brief-list">
         <li>Players from other provinces who deposited but can't play — need a clear, kind explanation and help withdrawing funds</li>
         <li>Bonus and promo confusion — why is my cashback $0? Why don't I qualify for this promo?</li>
-        <li>Game feature disputes — a player won something but it expired before they could use it</li>
+        <li>Promotion or reward disputes — a player won a promotional reward (e.g. free tickets, bonus spins) but it expired or disappeared before they could use it</li>
         <li>Frustrated players who want compensation or feel treated unfairly — de-escalate, don't fix everything</li>
       </ul>
     </div>
@@ -457,7 +461,7 @@ function getCustomerReply(agentMsg) {
       if (hint) hint.textContent = 'Connection issue. Click below to submit your chat for scoring.';
       setBanner('amber', '<strong>Connection issue.</strong> The chat service is temporarily unavailable. You can still submit for scoring.');
     } else {
-      var fallback = "hmm, give me a sec...";
+      var fallbacks = ["ok but what are you actually going to do about it?", "so what happens now then?", "i'm still waiting for an answer", "yeah but that doesn't fix my problem"]; var fallback = fallbacks[Math.floor(Math.random() * fallbacks.length)];
       history.push({ role: 'assistant', content: fallback });
       addMessage('customer', fallback);
     }
