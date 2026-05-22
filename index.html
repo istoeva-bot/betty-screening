@@ -631,8 +631,8 @@ document.addEventListener('visibilitychange', function() {
 
     if (tabSwitches >= MAX_TAB_SWITCHES) {
       showModal(
-        '🚫 Session ended',
-        'You left this tab ' + tabSwitches + ' times. Your chat has been submitted automatically for scoring.',
+        '✅ Simulation submitted',
+        'We noticed you switched away a few times, so your chat has been submitted automatically for scoring. Thank you for participating — you may now close this tab.',
         true
       );
       if (!isFinished) endChat();
@@ -656,9 +656,17 @@ function showModal(title, body, permanent) {
   document.getElementById('modalBody').innerHTML = body;
   var btn = document.querySelector('.modal-btn');
   if (permanent) {
-    btn.style.display = 'none';
+    btn.textContent = 'You may now close this tab';
+    btn.style.background = 'var(--surface2)';
+    btn.style.color = 'var(--text2)';
+    btn.style.cursor = 'default';
+    btn.onclick = null;
   } else {
-    btn.style.display = 'block';
+    btn.textContent = 'I understand — back to the chat';
+    btn.style.background = '#1A1A1A';
+    btn.style.color = '#F5C518';
+    btn.style.cursor = 'pointer';
+    btn.onclick = closeModal;
   }
   document.getElementById('tabModal').classList.add('visible');
 }
