@@ -163,8 +163,12 @@ body { display: flex; align-items: flex-start; justify-content: center; padding:
     <p class="s-heading">Welcome 👋</p>
     <p class="s-sub">This is a live chat simulation for the <em>CS Agent</em> role at Betty. It takes around <em>10-15 minutes</em>.<br><br>You'll play the agent. The chat bot will play a real Betty customer with a real issue. Handle it as you would on the job — warm, clear, and human.</p><div style="background:var(--surface2);border-radius:var(--r);padding:12px 14px;margin-bottom:20px;font-size:13px;color:var(--text2);line-height:1.6;"><strong style="color:var(--text);font-weight:500;">How it works:</strong> You'll have <strong style="color:var(--text);font-weight:500;">7 exchanges</strong> with the customer. The chat ends automatically after that, so make the most of each message. You'll be scored on your communication style and how you handle the situation — not on whether you perfectly resolve everything.</div>
     <p class="field-label">Your full name</p>
-    <div class="name-row">
+    <div class="name-row" style="margin-bottom:10px;">
       <input type="text" id="candidateName" placeholder="e.g. Sarah Johnson" autocomplete="name" />
+    </div>
+    <p class="field-label">Your email address</p>
+    <div class="name-row">
+      <input type="email" id="candidateEmail" placeholder="e.g. sarah@email.com" autocomplete="email" />
       <button class="btn-primary" onclick="goToBrief()">Next →</button>
     </div>
     <p class="small-note">Your responses will be reviewed by the Betty hiring team.</p>
@@ -244,6 +248,7 @@ body { display: flex; align-items: flex-start; justify-content: center; padding:
 <script>
 // ── State ──
 let candidateName = '';
+let candidateEmail = '';
 let scenario = null;
 let history = [];
 let isBusy = false;
@@ -341,8 +346,11 @@ function show(id) {
 
 function goToBrief() {
   var ni = document.getElementById('candidateName');
+  var ei = document.getElementById('candidateEmail');
   candidateName = ni.value.trim();
+  candidateEmail = ei.value.trim();
   if (!candidateName) { ni.focus(); return; }
+  if (!candidateEmail) { ei.focus(); return; }
   scenario = SCENARIOS[Math.floor(Math.random() * SCENARIOS.length)];
 
   // Populate scenario box
@@ -581,6 +589,7 @@ function exportToSheets() {
   var payload = {
     timestamp: new Date().toLocaleString('en-CA'),
     candidate: candidateName,
+    email: candidateEmail,
     scenario: scenario.label,
     tabSwitches: tabSwitches,
     overall: s.overall,
