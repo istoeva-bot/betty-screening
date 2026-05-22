@@ -100,6 +100,8 @@ body { display: flex; align-items: flex-start; justify-content: center; padding:
 .end-wrap { padding: 0 20px 14px; }
 .end-btn { width: 100%; padding: 10px; border-radius: var(--r); border: 0.5px solid var(--border-md); background: var(--surface); font-family: 'DM Sans', sans-serif; font-size: 13px; color: var(--text2); cursor: pointer; transition: background 0.15s, color 0.15s; }
 .end-btn:hover { background: var(--surface2); color: var(--text); }
+.msg-counter { font-size: 11.5px; color: var(--text3); text-align: center; padding: 4px 20px 0; }
+.msg-counter.warning { color: #854F0B; font-weight: 500; }
 .results-label { font-size: 11px; font-weight: 500; color: var(--text2); text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 14px; }
 .score-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 14px; }
 .sc { background: var(--surface2); border-radius: var(--r); padding: 12px 14px; }
@@ -122,6 +124,8 @@ body { display: flex; align-items: flex-start; justify-content: center; padding:
 .verdict-box.proceed .vn { color: var(--green-dark); }
 .verdict-box.hold .vn { color: var(--amber-mid); }
 .verdict-box.decline .vn { color: var(--red-mid); }
+.tab-warning { padding: 10px 20px; font-size: 12.5px; line-height: 1.5; background: #FFF3CD; color: #856404; border-bottom: 0.5px solid #FFE083; display: none; }
+.tab-warning strong { font-weight: 500; }
 @media (max-width: 500px) {
   body { padding: 0; }
   .card { border-radius: 0; min-height: 100vh; box-shadow: none; }
@@ -143,6 +147,7 @@ body { display: flex; align-items: flex-start; justify-content: center; padding:
     <span style="font-size:11px;padding:3px 10px;border-radius:20px;background:rgba(255,255,255,0.1);color:rgba(255,255,255,0.7);border:0.5px solid rgba(255,255,255,0.15);">Live chat exercise</span>
   </div>
   <div class="banner" id="banner"></div>
+  <div class="tab-warning" id="tabWarning"></div>
 
   <!-- SCREEN 1: Name -->
   <div id="screen-name">
@@ -159,35 +164,33 @@ body { display: flex; align-items: flex-start; justify-content: center; padding:
   <!-- SCREEN 2: Briefing -->
   <div id="screen-brief">
     <div class="brief-header">
-      <h2>Before you start — quick read 📋</h2>
-      <p>No prior knowledge of Betty needed. This takes 2 minutes to read.</p>
-    </div>
-    <div class="brief-section">
-      <div class="brief-section-title">About Betty</div>
-      <div class="info-grid">
-        <div class="info-card"><div class="info-card-label">What we are</div><div class="info-card-val">Online casino — slots, bingo, live casino. Licensed by AGCO in Ontario &amp; Alberta.</div></div>
-        <div class="info-card"><div class="info-card-label">Key rule</div><div class="info-card-val">Players must be physically present in the province they registered in to play. Quebec, BC etc. = no access.</div></div>
-        <div class="info-card"><div class="info-card-label">Common mix-up</div><div class="info-card-val">betty.ca (us) and betty.com are completely separate, unrelated sites.</div></div>
-        <div class="info-card"><div class="info-card-label">Tone</div><div class="info-card-val">Warm and human, not robotic. Light emojis are fine. Say "players" not "customers".</div></div>
-      </div>
-    </div>
-
-    <div class="brief-section">
-      <div class="brief-section-title">Terms &amp; what you can do</div>
-      <ul class="brief-list">
-        <li><strong style="font-weight:500;color:var(--text);">Cashback</strong> — automated weekly rebate on net losses over $100. Shows $0 until threshold is hit.</li>
-        <li><strong style="font-weight:500;color:var(--text);">Crack the Code</strong> — in-game bingo feature that awards free tickets. Valid for the next round only — expire immediately and are not replaced.</li>
-        <li><strong style="font-weight:500;color:var(--text);">Betty coins</strong> — in-app currency with no cash value. Cannot be given as compensation.</li>
-        <li><strong style="font-weight:500;color:var(--text);">Promos</strong> — variable eligibility (min deposit, min play etc.), tailored per player.</li>
-        <li><strong style="font-weight:500;color:var(--text);">VIP host</strong> — dedicated manager for high-value players. Escalate all bonus requests to them.</li>
-        <li><strong style="font-weight:500;color:#1A7A5E;">✓ You can:</strong> explain policy, guide withdrawals, acknowledge frustration, escalate to VIP host or manager.</li>
-        <li><strong style="font-weight:500;color:#A32D2D;">✗ You cannot:</strong> reinstate expired rewards, offer coins/cash as compensation, approve bonuses, override game outcomes.</li>
-      </ul>
+      <h2>Before you start 📋</h2>
+      <p>No prior knowledge of Betty needed. Read this carefully — it's everything you need for your scenario.</p>
     </div>
 
     <div class="brief-section" style="padding-bottom:18px;">
       <div class="brief-section-title">Your scenario</div>
       <div class="scenario-box" id="scenarioBox"><div class="scenario-box-label">Loading...</div></div>
+    </div>
+
+    <div class="brief-section">
+      <div class="brief-section-title">What you can and cannot do in this scenario</div>
+      <ul class="brief-list" id="candoList"></ul>
+    </div>
+
+    <div class="brief-section">
+      <div class="brief-section-title">Key terms for your scenario</div>
+      <ul class="brief-list" id="termsList"></ul>
+    </div>
+
+    <div class="brief-section">
+      <div class="brief-section-title">About Betty</div>
+      <div class="info-grid">
+        <div class="info-card"><div class="info-card-label">What we are</div><div class="info-card-val">Online casino — slots, bingo, live casino. Licensed by AGCO in Ontario &amp; Alberta.</div></div>
+        <div class="info-card"><div class="info-card-label">Key rule</div><div class="info-card-val">Players must be physically present in the province they registered in to play. British Columbia, Quebec etc. = no access.</div></div>
+        <div class="info-card"><div class="info-card-label">Common mix-up</div><div class="info-card-val">betty.ca (us) and betty.com are completely separate, unrelated sites.</div></div>
+        <div class="info-card"><div class="info-card-label">Tone</div><div class="info-card-val">Warm and human, not robotic. Light emojis are fine. Say "players" not "customers".</div></div>
+      </div>
     </div>
     <div class="brief-footer">
       <button class="btn-primary" onclick="startChat()">I'm ready — start the chat →</button>
@@ -203,8 +206,9 @@ body { display: flex; align-items: flex-start; justify-content: center; padding:
         <svg viewBox="0 0 16 16"><path d="M8 13V3M3 8l5-5 5 5"/></svg>
       </button>
     </div>
+    <div class="msg-counter" id="msgCounter"></div>
     <div class="end-wrap" id="endWrap" style="display:none">
-      <p style="font-size:12px;color:var(--text3);text-align:center;padding:0 20px 6px;">Once the issue feels resolved, click below to receive your score.</p>
+      <p style="font-size:12px;color:var(--text3);text-align:center;padding:0 20px 6px;" id="endHint">Once the issue feels resolved, click below to receive your score.</p>
       <button class="end-btn" onclick="endChat()">End chat &amp; get score →</button>
     </div>
   </div>
@@ -230,6 +234,8 @@ let msgCount = 0;
 let customerMsgCount = 0;
 let consecutiveErrors = 0;
 const MAX_CUSTOMER_MSGS = 7;
+let tabSwitches = 0;
+const MAX_TAB_SWITCHES = 3;
 
 // ── Scenarios ──
 const SCENARIOS = [
@@ -237,6 +243,13 @@ const SCENARIOS = [
     id: 'geo',
     label: 'Quebec player — geo block confusion',
     preview: "A player from Quebec deposited $20, received bonus spins, but can't play. They're confused and frustrated — they've played on betty.com before and don't understand why betty.ca is different. You cannot let them play, but you can explain why and help them withdraw their $20.",
+    terms: [
+      "<strong>betty.ca vs betty.com</strong> — betty.ca is our site, licensed in Ontario &amp; Alberta only. betty.com is a completely separate, unrelated company. Players often confuse the two.",
+      "<strong>Geo restriction</strong> — players must be physically present in the province they registered in to access games. A player in Quebec, British Columbia, or any other province cannot play on betty.ca regardless of where they signed up.",
+      "<strong>Withdrawals</strong> — a player who can't play can still withdraw their funds. Guide them to the withdrawal section and reassure them the process is straightforward."
+    ],
+    cando: "Explain the geo restriction clearly and warmly, help the player understand how to withdraw their funds, acknowledge their frustration.",
+    cannotdo: "Allow them to play from an ineligible province, waive the geo restriction, offer compensation for not being able to play.",
     customerName: 'Marc',
     initials: 'MB',
     opening: "hello?? i deposited $20 and got bonus spins but now i cant play anything. whats going on",
@@ -248,6 +261,13 @@ const SCENARIOS = [
     id: 'bingo',
     label: 'Expired bingo tickets — policy dispute',
     preview: "A player won 2 free bingo tickets from the Crack the Code feature but didn't use them immediately — she was mid-spin on another slot. They expired. She wants them reinstated or compensated. You cannot reinstate them or offer Betty coins — but you can acknowledge her frustration and explain the policy clearly.",
+    terms: [
+      "<strong>Crack the Code</strong> — an in-game bingo feature where players can win free bingo tickets. Tickets are only valid for the very next bingo round. They expire immediately if not used and are not replaced.",
+      "<strong>Betty coins</strong> — in-app currency with no cash value. You cannot give these out as compensation.",
+      "<strong>Feedback escalation</strong> — if a player feels a rule wasn't clearly communicated, you can acknowledge this and pass the feedback to the team, even if you can't change the outcome."
+    ],
+    cando: "Explain the Crack the Code ticket policy clearly, acknowledge the frustration empathetically, pass feedback about unclear rules to the team.",
+    cannotdo: "Reinstate expired bingo tickets, offer Betty coins or any compensation, override the game mechanic.",
     customerName: 'Jessica',
     initials: 'JW',
     opening: "hi i won 2 free bingo tickets and they just disappeared. i never even got to use them. i want them back or at least some compensation",
@@ -258,7 +278,14 @@ const SCENARIOS = [
   {
     id: 'vip',
     label: 'VIP player — cashback confusion + missed promos',
-    preview: "A VIP player deposited $80 and his cashback shows $0. He also feels he's been missing out on promos for months because his deposits are always smaller than the minimum required. You can explain how cashback works (net losses must exceed $100), but you cannot offer compensation for missed promos — you can refer him to his VIP host instead.",
+    preview: "A VIP player deposited $80 and his cashback shows $0. He also feels he's been missing out on promos for months because his deposits are always smaller than the minimum required. You can explain how cashback works, but you cannot offer compensation — refer him to his VIP host instead.",
+    terms: [
+      "<strong>Cashback promotion</strong> — an automated weekly rebate on net losses. Only triggers when net losses exceed $100 for the week. Shows as $0 until that threshold is reached — even frequent small depositors may never hit it.",
+      "<strong>Promotions / promos</strong> — deposit bonuses with variable eligibility criteria including minimum deposit amounts. Players who deposit in smaller amounts may not qualify for higher-tier promos.",
+      "<strong>VIP host</strong> — a dedicated account manager for high-value players. Bonus requests and compensation discussions should always be escalated to the VIP host, not handled directly by CS."
+    ],
+    cando: "Explain how cashback calculates, explain promo eligibility clearly, refer the player to their VIP host for bonus requests.",
+    cannotdo: "Offer compensation for missed promos, adjust promo eligibility, approve bonus requests directly.",
     customerName: 'Jeffrey',
     initials: 'JH',
     opening: "hey so i put in $80 and my cashback is showing $0... also i keep missing promos because my deposits are always too small for them. this has been going on for months. is there anything anyone can actually do",
@@ -270,6 +297,13 @@ const SCENARIOS = [
     id: 'angry',
     label: 'Angry player — ignored bonus request, threatening to leave',
     preview: "A long-term player requested a bonus 3 weeks ago and heard nothing back. He's frustrated and comparing Betty unfavourably to competitors. The bonus request was declined by management — that's why he never heard back. You cannot approve bonuses, but you can be honest about what happened and try to retain him.",
+    terms: [
+      "<strong>Bonus requests</strong> — players can request cash bonuses which go to management for approval. CS agents cannot approve these directly. If declined, the player should have been notified — a lapse in communication is a legitimate complaint.",
+      "<strong>Escalation</strong> — for retention situations involving long-term or high-value players, you can offer to flag their feedback to a manager or VIP host and ensure follow-up actually happens.",
+      "<strong>Retention</strong> — you won't always be able to give a player what they want, but being honest, empathetic, and transparent goes a long way. Acknowledge failures when they happen."
+    ],
+    cando: "Be honest that the bonus was declined by management, acknowledge the communication failure, escalate to a manager or VIP host, try to retain the player.",
+    cannotdo: "Approve or offer a bonus, override the management decision, guarantee future bonuses.",
     customerName: 'Dylan',
     initials: 'DK',
     opening: "i asked for a cash bonus 3 weeks ago and still nothing. no email, no reply, nothing. this site just keeps getting worse. i'm pretty much done here",
@@ -291,8 +325,21 @@ function goToBrief() {
   candidateName = ni.value.trim();
   if (!candidateName) { ni.focus(); return; }
   scenario = SCENARIOS[Math.floor(Math.random() * SCENARIOS.length)];
+
+  // Populate scenario box
   var box = document.getElementById('scenarioBox');
   box.innerHTML = '<div class="scenario-box-label">Your scenario</div><div class="scenario-box-title">' + scenario.label + '</div><div class="scenario-box-desc">' + scenario.preview + '</div>';
+
+  // Populate can/cannot list
+  var candoList = document.getElementById('candoList');
+  candoList.innerHTML =
+    '<li><strong style="font-weight:500;color:#1A7A5E;">✓ You can:</strong> ' + scenario.cando + '</li>' +
+    '<li><strong style="font-weight:500;color:#A32D2D;">✗ You cannot:</strong> ' + scenario.cannotdo + '</li>';
+
+  // Populate scenario-specific terms
+  var termsList = document.getElementById('termsList');
+  termsList.innerHTML = scenario.terms.map(function(t) { return '<li>' + t + '</li>'; }).join('');
+
   show('screen-brief');
 }
 
@@ -335,6 +382,24 @@ function addMessage(role, text) {
   area.scrollTop = area.scrollHeight;
   msgCount++;
   if (msgCount >= 2) document.getElementById('endWrap').style.display = 'block';
+  updateCounter();
+}
+
+function updateCounter() {
+  var remaining = MAX_CUSTOMER_MSGS - customerMsgCount;
+  var counter = document.getElementById('msgCounter');
+  if (!counter) return;
+  if (customerMsgCount === 0) { counter.textContent = ''; return; }
+  if (remaining <= 0) {
+    counter.textContent = 'Chat complete — please submit for scoring.';
+    counter.className = 'msg-counter warning';
+  } else if (remaining <= 2) {
+    counter.textContent = remaining + ' exchange' + (remaining === 1 ? '' : 's') + ' remaining before the chat ends automatically.';
+    counter.className = 'msg-counter warning';
+  } else {
+    counter.textContent = customerMsgCount + ' of ' + MAX_CUSTOMER_MSGS + ' exchanges used.';
+    counter.className = 'msg-counter';
+  }
 }
 
 function showTyping() {
@@ -415,13 +480,13 @@ function getCustomerReply(agentMsg) {
       return;
     }
     addMessage('customer', reply);
+    updateCounter();
     if (customerMsgCount >= MAX_CUSTOMER_MSGS && !isFinished) {
       document.getElementById('userInput').disabled = true;
       document.getElementById('sendBtn').disabled = true;
-      var endWrap = document.getElementById('endWrap');
-      endWrap.style.display = 'block';
-      var hint = endWrap.querySelector('p');
-      if (hint) hint.textContent = 'Maximum exchanges reached. Please end the chat to get your score.';
+      document.getElementById('endWrap').style.display = 'block';
+      var hint = document.getElementById('endHint');
+      if (hint) hint.textContent = 'The chat has reached its limit. Please submit for scoring.';
     }
     isBusy = false;
     if (!isFinished && customerMsgCount < MAX_CUSTOMER_MSGS) {
@@ -498,6 +563,7 @@ function exportToSheets() {
     timestamp: new Date().toLocaleString('en-CA'),
     candidate: candidateName,
     scenario: scenario.label,
+    tabSwitches: tabSwitches,
     overall: s.overall,
     greeting: s.scores.greeting_and_tone,
     empathy: s.scores.empathy_and_warmth,
@@ -534,6 +600,29 @@ function showResults() {
   show('screen-results');
   hideBanner();
 }
+
+// ── Tab visibility tracking ──
+document.addEventListener('visibilitychange', function() {
+  // Only track during the actual chat, not briefing or results
+  if (document.getElementById('screen-chat').style.display !== 'block') return;
+  if (isFinished) return;
+
+  if (document.hidden) {
+    tabSwitches++;
+    var warning = document.getElementById('tabWarning');
+
+    if (tabSwitches >= MAX_TAB_SWITCHES) {
+      // Auto-end after 3 switches
+      warning.innerHTML = '<strong>Session ended.</strong> You left this tab too many times. Your chat has been submitted automatically.';
+      warning.style.display = 'block';
+      if (!isFinished) endChat();
+    } else {
+      var remaining = MAX_TAB_SWITCHES - tabSwitches;
+      warning.innerHTML = '<strong>Please stay on this tab.</strong> We noticed you switched away (' + tabSwitches + ' time' + (tabSwitches > 1 ? 's' : '') + '). ' + (remaining === 1 ? 'One more switch will end your session automatically.' : remaining + ' more switches will end your session automatically.');
+      warning.style.display = 'block';
+    }
+  }
+});
 
 // ── Init ──
 show('screen-name');
