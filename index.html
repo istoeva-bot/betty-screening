@@ -555,6 +555,7 @@ function buildTranscript() {
 function endChat() {
   if (isBusy) return;
   isFinished = true;
+  consecutiveErrors = 0; // Reset so scoring failures don't trigger connection banner
   document.getElementById('inputArea').style.display = 'none';
   document.getElementById('endWrap').style.display = 'none';
   document.getElementById('chatArea').style.maxHeight = '200px';
