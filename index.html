@@ -627,6 +627,12 @@ function showResults() {
   document.getElementById('verdictBox').innerHTML = '<div style="text-align:center;padding:24px 16px;"><div style="font-size:40px;margin-bottom:16px;">🎉</div><div style="font-size:16px;font-weight:500;color:var(--text);margin-bottom:10px;">Simulation complete</div><div style="font-size:14px;color:var(--text2);line-height:1.65;max-width:360px;margin:0 auto;">Thank you for completing the Betty CS Agent simulation. Your responses have been recorded and our team will be in touch with next steps shortly.</div></div>';
   show('screen-results');
   hideBanner();
+  // If modal is showing (auto-submit path), update it to confirm saved
+  var modal = document.getElementById('tabModal');
+  if (modal && modal.classList.contains('visible')) {
+    document.getElementById('modalTitle').innerHTML = '✅ Results saved';
+    document.getElementById('modalBody').innerHTML = 'Your simulation has been submitted successfully. Thank you for participating — you may now close this tab.';
+  }
 }
 
 // ── Tab visibility tracking ──
@@ -639,12 +645,14 @@ document.addEventListener('visibilitychange', function() {
     tabSwitches++;
 
     if (tabSwitches >= MAX_TAB_SWITCHES) {
-      showModal(
-        '✅ Simulation submitted',
-        'We noticed you switched away a few times, so your chat has been submitted automatically for scoring. Thank you for participating — you may now close this tab.',
-        true
-      );
-      if (!isFinished) endChat();
+      if (!isFinished) {
+        showModal(
+          '⏳ Submitting your results',
+          'We noticed you switched away a few times, so your chat is being submitted automatically. <strong>Please wait a moment before closing this tab</strong> to make sure your results are saved.',
+          true
+        );
+        endChat();
+      }
     } else {
       var remaining = MAX_TAB_SWITCHES - tabSwitches;
       showModal(
