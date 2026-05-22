@@ -126,6 +126,15 @@ body { display: flex; align-items: flex-start; justify-content: center; padding:
 .verdict-box.decline .vn { color: var(--red-mid); }
 .tab-warning { padding: 10px 20px; font-size: 12.5px; line-height: 1.5; background: #FFF3CD; color: #856404; border-bottom: 0.5px solid #FFE083; display: none; }
 .tab-warning strong { font-weight: 500; }
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 20px; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
+.modal-overlay.visible { opacity: 1; pointer-events: all; }
+.modal-box { background: var(--surface); border-radius: var(--rlg); padding: 24px; max-width: 360px; width: 100%; box-shadow: 0 8px 40px rgba(0,0,0,0.18); }
+.modal-icon { font-size: 32px; margin-bottom: 12px; text-align: center; }
+.modal-title { font-size: 16px; font-weight: 500; color: var(--text); margin-bottom: 8px; text-align: center; }
+.modal-body { font-size: 13.5px; color: var(--text2); line-height: 1.6; text-align: center; margin-bottom: 20px; }
+.modal-body strong { color: var(--text); font-weight: 500; }
+.modal-btn { width: 100%; padding: 11px; border-radius: var(--r); border: none; background: #1A1A1A; color: #F5C518; font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 500; cursor: pointer; transition: opacity 0.15s; }
+.modal-btn:hover { opacity: 0.88; }
 @media (max-width: 500px) {
   body { padding: 0; }
   .card { border-radius: 0; min-height: 100vh; box-shadow: none; }
@@ -152,7 +161,7 @@ body { display: flex; align-items: flex-start; justify-content: center; padding:
   <!-- SCREEN 1: Name -->
   <div id="screen-name">
     <p class="s-heading">Welcome 👋</p>
-    <p class="s-sub">This is a live chat simulation for the <em>CS Agent</em> role at Betty. It takes around <em>10-15 minutes</em>.<br><br>You'll play the agent. The chat bot will play a real Betty customer with a real issue. Handle it as you would on the job — warm, clear, and human.</p>
+    <p class="s-sub">This is a live chat simulation for the <em>CS Agent</em> role at Betty. It takes around <em>10-15 minutes</em>.<br><br>You'll play the agent. The chat bot will play a real Betty customer with a real issue. Handle it as you would on the job — warm, clear, and human.</p><div style="background:var(--surface2);border-radius:var(--r);padding:12px 14px;margin-bottom:20px;font-size:13px;color:var(--text2);line-height:1.6;"><strong style="color:var(--text);font-weight:500;">How it works:</strong> You'll have <strong style="color:var(--text);font-weight:500;">7 exchanges</strong> with the customer. The chat ends automatically after that, so make the most of each message. You'll be scored on your communication style and how you handle the situation — not on whether you perfectly resolve everything.</div>
     <p class="field-label">Your full name</p>
     <div class="name-row">
       <input type="text" id="candidateName" placeholder="e.g. Sarah Johnson" autocomplete="name" />
@@ -219,6 +228,16 @@ body { display: flex; align-items: flex-start; justify-content: center; padding:
     <div class="score-grid" id="scoreGrid"></div>
     <div id="verdictBox"></div>
     <div class="export-note" id="exportNote" style="display:none;"></div>
+  </div>
+</div>
+
+<!-- Tab switch warning modal -->
+<div class="modal-overlay" id="tabModal">
+  <div class="modal-box">
+    <div class="modal-icon">⚠️</div>
+    <div class="modal-title" id="modalTitle">Please stay on this tab</div>
+    <div class="modal-body" id="modalBody">We noticed you switched away from this page.</div>
+    <button class="modal-btn" onclick="closeModal()">I understand — back to the chat</button>
   </div>
 </div>
 
@@ -609,20 +628,44 @@ document.addEventListener('visibilitychange', function() {
 
   if (document.hidden) {
     tabSwitches++;
-    var warning = document.getElementById('tabWarning');
 
     if (tabSwitches >= MAX_TAB_SWITCHES) {
-      // Auto-end after 3 switches
-      warning.innerHTML = '<strong>Session ended.</strong> You left this tab too many times. Your chat has been submitted automatically.';
-      warning.style.display = 'block';
+      showModal(
+        '🚫 Session ended',
+        'You left this tab ' + tabSwitches + ' times. Your chat has been submitted automatically for scoring.',
+        true
+      );
       if (!isFinished) endChat();
     } else {
       var remaining = MAX_TAB_SWITCHES - tabSwitches;
-      warning.innerHTML = '<strong>Please stay on this tab.</strong> We noticed you switched away (' + tabSwitches + ' time' + (tabSwitches > 1 ? 's' : '') + '). ' + (remaining === 1 ? 'One more switch will end your session automatically.' : remaining + ' more switches will end your session automatically.');
-      warning.style.display = 'block';
+      showModal(
+        '⚠️ Please stay on this tab',
+        'We noticed you switched away (<strong>' + tabSwitches + ' time' + (tabSwitches > 1 ? 's' : '') + '</strong>). ' +
+        (remaining === 1
+          ? '<strong>One more switch will end your session automatically.</strong>'
+          : '<strong>' + remaining + ' more switches</strong> will end your session automatically.'),
+        false
+      );
     }
   }
 });
+
+// ── Modal ──
+function showModal(title, body, permanent) {
+  document.getElementById('modalTitle').innerHTML = title;
+  document.getElementById('modalBody').innerHTML = body;
+  var btn = document.querySelector('.modal-btn');
+  if (permanent) {
+    btn.style.display = 'none';
+  } else {
+    btn.style.display = 'block';
+  }
+  document.getElementById('tabModal').classList.add('visible');
+}
+
+function closeModal() {
+  document.getElementById('tabModal').classList.remove('visible');
+}
 
 // ── Init ──
 show('screen-name');
